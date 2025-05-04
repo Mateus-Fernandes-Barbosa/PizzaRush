@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.pizzarush.pizza_rush"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -24,7 +24,7 @@ android {
         applicationId = "com.pizzarush.pizza_rush"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21 // Alterado para atender os requisitos do Stripe
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -41,4 +41,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Adiciona dependências para o Stripe
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.9.0")
 }

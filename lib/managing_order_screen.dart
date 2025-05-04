@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'main_screen.dart';
+import 'payment_screen.dart';
 
 //Class to manage the order of flavors
 // This class is responsible for displaying the flavors and allowing the user to select them
@@ -375,25 +376,56 @@ class _ManagingOrderState extends State<_ManagingOrder> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-           ElevatedButton(
-            onPressed: (){
-              List<PizzaSabor> pizzaSabores = [];
-              for(int i = 0; i < quantityFlavors; i++){
-                pizzaSabores.add(PizzaSabor(
-                  idPizza: pizza.id,
-                  sabor: selectedFlavors[i],
-                  tamanho: tamanho,
-                  preco: getPrice(selectedFlavors[i], tamanho),
-                ));
-              }
-              debugPrint("Pizza ID: ${pizza.id}, Observação: ${pizza.observacao}, Tipo de Borda: ${pizza.tipoBorda}, ");
-              for(int i = 0; i < pizzaSabores.length; i++){
-                PizzaSabor pizzaSabor = pizzaSabores[i];
-                debugPrint("${i + 1}º Sabor: ${pizzaSabor.sabor}, Tamanho: ${pizzaSabor.tamanho}, Preço: R\$${pizzaSabor.preco}");
-              }
-            }, 
-            child: Text("Confirmar Pedido"),
-            ), 
+            Expanded(
+              child: ElevatedButton(
+                onPressed: selectedFlavors.length == quantityFlavors 
+                  ? () {
+                      List<PizzaSabor> pizzaSabores = [];
+                      List<Map<String, dynamic>> orderItems = [];
+                      
+                      double total = getTotalPrice();
+                      
+                      for(int i = 0; i < selectedFlavors.length; i++){
+                        int saborId = selectedFlavors[i];
+                        double preco = getPrice(saborId, tamanho);
+                        String nome = sabores.firstWhere((s) => s.id == saborId).nome;
+                        
+                        pizzaSabores.add(PizzaSabor(
+                          idPizza: pizza.id,
+                          sabor: saborId,
+                          tamanho: tamanho,
+                          preco: preco,
+                        ));
+                        
+                        orderItems.add({
+                          'id': saborId,
+                          'nome': nome,
+                          'preco': preco,
+                        });
+                      }
+                      
+                      // Navegação para a tela de pagamento
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentScreen(
+                            totalPrice: total,
+                            orderItems: orderItems,
+                            observations: pizza.observacao,
+                            crustType: pizza.tipoBorda,
+                            size: tamanho,
+                          ),
+                        ),
+                      );
+                    }
+                  : null, // Botão desabilitado se não tiver selecionado todos os sabores
+                child: Text("Finalizar Pedido"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedFlavors.length == quantityFlavors ? Theme.of(context).primaryColor : Colors.grey,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
