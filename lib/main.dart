@@ -1,10 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:pizza_rush/database/internal/database_definitions.dart';
-import 'package:pizza_rush/database/internal/language.dart';
-import 'package:pizza_rush/database/order_service.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'database/internal/database_helper.dart';
+import 'database/order_service.dart';
 import 'main_screen.dart';
 
 Future<void> database() async {
@@ -30,6 +30,34 @@ Future<void> database() async {
 }
 
 
-void main() {
-  runApp(MainScreen());
+void main() async {
+  // Garante que as widgets estão inicializadas
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isAndroid || Platform.isIOS) {
+    Stripe.publishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
+    await Stripe.instance.applySettings();
+  }
+  // Inicializa o Stripe - Substitua com sua chave publishable real quando estiver em produção
+
+
+  // Inicializa o aplicativo
+  runApp(PizzaRushApp());
 }
+
+class PizzaRushApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pizza Rush',
+      theme: ThemeData(
+        primarySwatch: Colors.red,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        useMaterial3: true,
+      ),
+      home: MainScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
