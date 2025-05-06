@@ -4,6 +4,9 @@ import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+// URL do servidor local
+const String apiUrl = 'http://192.168.100.2:4242'; // Use 10.0.2.2 para Android emulator ou localhost para web/desktop
+
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
   final List<Map<String, dynamic>> orderItems;
@@ -58,25 +61,35 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   bool _isPaymentSuccessful = false;
   String _errorMessage = '';
   
-  // String chave API Stripe (substitua pela sua chave quando for usar em produção)
+  // String chave API Stripe
   final String _stripePublishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
   
-  // Controladores para os campos do formulário
+  // Controladores para os campos do formulário de entrega
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   
-  // Controladores para os campos de cartão de crédito
-  final TextEditingController _cardNumberController = TextEditingController();
-  final TextEditingController _cardExpiryController = TextEditingController();
-  final TextEditingController _cardCvvController = TextEditingController();
+  // Controladores para os campos de cartão separados
   final TextEditingController _cardHolderController = TextEditingController();
+  
+  // Variáveis para o Stripe
+  bool _isCardFormValid = false;
+  stripe.CardFormEditController _cardFormController = stripe.CardFormEditController();
 
   @override
   void initState() {
     super.initState();
     // Inicialize o Stripe SDK
     initializeStripe();
+    
+    _cardFormController.addListener(updateCardFormValidStatus);
+  }
+  
+  // Atualiza o status de validade do formulário do cartão
+  void updateCardFormValidStatus() {
+    setState(() {
+      _isCardFormValid = _cardFormController.details.complete;
+    });
   }
 
   // Inicializa o Stripe SDK com a chave publishable
@@ -107,96 +120,98 @@ class _PaymentScreenState extends State<_PaymentScreen> {
       _errorMessage = '';
     });
 
-    try {
-      // Etapa 1: Criar intent de pagamento no servidor (normalmente feito no backend)
-      final paymentIntentResult = await _createPaymentIntent();
-      
-      // Etapa 2: Confirmar o pagamento com o Stripe SDK
-      await _confirmPayment(paymentIntentResult['client_secret']);
-
-      // Se chegou até aqui sem exceções, o pagamento foi bem-sucedido
-      setState(() {
-        _isPaymentSuccessful = true;
-        _isLoading = false;
-      });
-      
-      // Exibir confirmação de pagamento
-      _showPaymentSuccessDialog();
-      
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Erro no pagamento: ${e.toString()}';
-      });
+    if (_paymentMethod == 'Cartão de Crédito') {
+      try {
+        if (!_isCardFormValid) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Por favor, preencha os dados do cartão corretamente.';
+          });
+          return;
+        }
+        
+        // Etapa 1: Criar intent de pagamento no servidor
+        final paymentIntentResult = await _createPaymentIntent();
+        
+        // Etapa 2: Preparar os dados de cobrança
+        final billingDetails = stripe.BillingDetails(
+          name: _cardHolderController.text.isNotEmpty ? _cardHolderController.text : _nameController.text,
+          phone: _phoneController.text,
+          address: stripe.Address(
+            line1: _addressController.text,
+            line2: '',
+            city: 'Cidade',
+            state: 'Estado',
+            postalCode: '00000-000',
+            country: 'BR',
+          ),
+        );
+        
+        // Etapa 3: Confirmar o pagamento com o Stripe SDK
+        await stripe.Stripe.instance.confirmPayment(
+          paymentIntentClientSecret: paymentIntentResult['clientSecret'],
+          data: stripe.PaymentMethodParams.card(
+            paymentMethodData: stripe.PaymentMethodData(
+              billingDetails: billingDetails,
+            ),
+          ),
+        );
+  
+        // Se chegou até aqui sem exceções, o pagamento foi bem-sucedido
+        await _saveOrderToDatabase();
+        
+        setState(() {
+          _isPaymentSuccessful = true;
+          _isLoading = false;
+        });
+        
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro no pagamento: ${e.toString()}';
+        });
+      }
+    } else if (_paymentMethod == 'Pix' || _paymentMethod == 'Dinheiro') {
+      // Para simplificar, consideramos os pagamentos Pix/Dinheiro como já aprovados
+      try {
+        await _saveOrderToDatabase();
+        setState(() {
+          _isPaymentSuccessful = true;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro ao registrar pedido: ${e.toString()}';
+        });
+      }
     }
   }
 
-  // Criar intent de pagamento (normalmente feito no backend)
+  // Criar intent de pagamento no nosso servidor
   Future<Map<String, dynamic>> _createPaymentIntent() async {
-    // Idealmente, esta chamada seria para o seu próprio backend que se comunicaria com a API do Stripe
-    // Aqui, estamos simulando uma resposta do servidor para fins de demonstração
-    
-    // Em um cenário real, você faria algo como:
-    /*
-    final response = await http.post(
-      Uri.parse('https://your-backend-url.com/create-payment-intent'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'amount': (widget.totalPrice * 100).toInt(), // O valor deve estar em centavos
-        'currency': 'brl',
-      }),
-    );
-    return jsonDecode(response.body);
-    */
-    
-    // Para fins de demonstração, simulamos uma resposta
-    return {
-      'id': 'mock_payment_intent_id',
-      'client_secret': 'mock_client_secret',
-      'amount': (widget.totalPrice * 100).toInt(),
-      'status': 'requires_payment_method',
-    };
-  }
-
-  // Confirmar pagamento com o Stripe SDK
-  Future<void> _confirmPayment(String clientSecret) async {
-    // Em um app real, você usaria algo como:
-    /*
-    final paymentMethod = await Stripe.instance.createPaymentMethod(
-      params: PaymentMethodParams.card(
-        paymentMethodData: PaymentMethodData(),
-      ),
-    );
-    
-    await Stripe.instance.confirmPayment(
-      paymentIntentClientSecret: clientSecret,
-      data: PaymentMethodParams.card(
-        paymentMethodData: PaymentMethodData(
-          billingDetails: BillingDetails(
-            name: _nameController.text,
-            phone: _phoneController.text,
-            address: Address(
-              line1: _addressController.text,
-              country: 'BR',
-            ),
-          ),
-        ),
-      ),
-    );
-    */
-    
-    // Para fins de demonstração, apenas simulamos um pagamento bem-sucedido após um atraso
-    await Future.delayed(const Duration(seconds: 2));
-    
-    // Em um cenário real, a confirmação seria retornada pelo método acima
-    // Se o método não lançar uma exceção, o pagamento foi bem-sucedido
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/create-payment-intent'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'amount': widget.totalPrice,
+          'currency': 'brl',
+        }),
+      );
+      
+      if (response.statusCode != 200) {
+        throw Exception('Erro no servidor: ${response.body}');
+      }
+      
+      return jsonDecode(response.body);
+    } catch (e) {
+      throw Exception('Erro na comunicação com servidor: ${e.toString()}');
+    }
   }
 
   // Salvar detalhes do pedido no banco de dados
   Future<void> _saveOrderToDatabase() async {
-    // Aqui você normalmente enviaria os detalhes do pedido para seu backend
-    // Esta é uma simulação para fins de demonstração
-    
     final orderDetails = {
       'customer_name': _nameController.text,
       'customer_phone': _phoneController.text,
@@ -208,24 +223,25 @@ class _PaymentScreenState extends State<_PaymentScreen> {
       'size': widget.size,
       'payment_method': _paymentMethod,
       'order_date': DateTime.now().toIso8601String(),
-      'status': 'paid',
+      'status': _paymentMethod == 'Dinheiro' ? 'pending_payment' : 'paid',
     };
     
-    // Em um app real, você faria algo como:
-    /*
-    final response = await http.post(
-      Uri.parse('https://your-backend-url.com/save-order'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(orderDetails),
-    );
-    
-    if (response.statusCode != 200) {
-      throw Exception('Falha ao salvar o pedido');
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/save-order'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(orderDetails),
+      );
+      
+      if (response.statusCode != 200) {
+        throw Exception('Falha ao salvar o pedido');
+      }
+      
+      // Pedido salvo com sucesso
+      return;
+    } catch (e) {
+      throw Exception('Erro ao salvar pedido: ${e.toString()}');
     }
-    */
-    
-    // Para fins de demonstração, apenas imprimimos os detalhes no console
-    debugPrint('Detalhes do pedido: $orderDetails');
   }
 
   // Diálogo de confirmação de pagamento bem-sucedido
@@ -248,9 +264,6 @@ class _PaymentScreenState extends State<_PaymentScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Salvar os detalhes do pedido (em um cenário real)
-              _saveOrderToDatabase();
-              
               // Voltar para a tela principal
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
@@ -392,7 +405,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: const Color.fromARGB(255, 255, 255, 255),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -404,84 +417,42 @@ class _PaymentScreenState extends State<_PaymentScreen> {
                 ),
                 SizedBox(height: 12),
                 
-                // Nome no cartão
-                TextField(
-                  controller: _cardHolderController,
-                  decoration: InputDecoration(
-                    labelText: 'Nome no cartão',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+                // Usando CardFormField para campos separados
+                stripe.CardFormField(
+                  controller: _cardFormController,
+                  style: stripe.CardFormStyle(
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: Colors.grey.shade400,
+                    textColor: Colors.black,
+                    fontSize: 16,
+                    placeholderColor: Colors.grey,
+                    backgroundColor: Colors.white,
+                    cursorColor: Theme.of(context).primaryColor,
                   ),
                 ),
-                SizedBox(height: 12),
                 
-                // Número do cartão
-                TextField(
-                  controller: _cardNumberController,
-                  decoration: InputDecoration(
-                    labelText: 'Número do cartão',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.credit_card),
+                // Mensagem sobre cartões de teste
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.blue.shade200),
                   ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 19,
-                  onChanged: (value) {
-                    // Formatar o número do cartão em grupos de 4 dígitos
-                    if (value.length > 0 && !value.contains(' ')) {
-                      final formattedValue = value.replaceAllMapped(
-                        RegExp(r".{4}"),
-                        (match) => "${match.group(0)} ",
-                      );
-                      _cardNumberController.value = TextEditingValue(
-                        text: formattedValue.trim(),
-                        selection: TextSelection.collapsed(offset: formattedValue.length),
-                      );
-                    }
-                  },
-                ),
-                SizedBox(height: 12),
-                
-                // Layout de duas colunas para validade e CVV
-                Row(
-                  children: [
-                    // Data de validade
-                    Expanded(
-                      child: TextField(
-                        controller: _cardExpiryController,
-                        decoration: InputDecoration(
-                          labelText: 'Validade (MM/AA)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.date_range),
-                        ),
-                        keyboardType: TextInputType.number,
-                        maxLength: 5,
-                        onChanged: (value) {
-                          // Formatar a data de validade como MM/AA
-                          if (value.length == 2 && !value.contains('/')) {
-                            _cardExpiryController.text = '$value/';
-                            _cardExpiryController.selection = TextSelection.fromPosition(
-                              TextPosition(offset: _cardExpiryController.text.length),
-                            );
-                          }
-                        },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Para testes, utilize:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    SizedBox(width: 12),
-                    // CVV
-                    Expanded(
-                      child: TextField(
-                        controller: _cardCvvController,
-                        decoration: InputDecoration(
-                          labelText: 'CVV',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.security),
-                        ),
-                        keyboardType: TextInputType.number,
-                        maxLength: 3,
-                        obscureText: true,
-                      ),
-                    ),
-                  ],
+                      Text('Número: 4242 4242 4242 4242'),
+                      Text('Validade: qualquer data futura'),
+                      Text('CVC: qualquer 3 dígitos'),
+                      Text('CEP: qualquer 5 dígitos'),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -648,7 +619,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           SizedBox(height: 16),
           Text(
             'Pagamento Realizado com Sucesso!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
           Text(
@@ -686,10 +657,9 @@ class _PaymentScreenState extends State<_PaymentScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _cardNumberController.dispose();
-    _cardExpiryController.dispose();
-    _cardCvvController.dispose();
     _cardHolderController.dispose();
+    _cardFormController.removeListener(updateCardFormValidStatus);
+    _cardFormController.dispose();
     super.dispose();
   }
 }
