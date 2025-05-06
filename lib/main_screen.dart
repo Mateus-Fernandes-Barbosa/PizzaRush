@@ -67,8 +67,19 @@ class _MainScreenState extends State<_MainScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ManagingOrder(quantityFlavors: 1)
+                          )
+                      );
+                    },
                     child: Text("Histórico de Pedidos")
+                ),
+                ElevatedButton(
+                    onPressed: () {},
+                    child: Text("Teste mapa")
                 ),
               ],
             ),
