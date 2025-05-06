@@ -67,7 +67,9 @@ class _MainScreenState extends State<_MainScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      debugPrint("Banana");
+                    },
                     child: Text("Histórico de Pedidos")
                 ),
               ],
