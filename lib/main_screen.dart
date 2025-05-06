@@ -68,6 +68,12 @@ class _MainScreenState extends State<_MainScreen> {
               children: [
                 ElevatedButton(
                     onPressed: () {
+                      debugPrint("Banana");
+                    },
+                    child: Text("Histórico de Pedidos")
+                ),
+                ElevatedButton(
+                    onPressed: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -76,10 +82,6 @@ class _MainScreenState extends State<_MainScreen> {
                       );
                     },
                     child: Text("Histórico de Pedidos")
-                ),
-                ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Teste mapa")
                 ),
               ],
             ),

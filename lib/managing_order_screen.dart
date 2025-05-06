@@ -22,6 +22,7 @@ class Sabor {
     required this.precoM,
     required this.precoG,
   });
+
 }
 
 // This class is responsible for making the channel between the flavors and the pizza
@@ -56,6 +57,52 @@ class Pizza {
   });
 }
 
+// This class is responsible for managing the drinks that are offered
+// It contains the id of the drink, the name, and it's current price
+class Bebida{
+  final int id;
+  late double preco;
+  final String nome;
+  final String imagem;
+
+  Bebida({required this.id, required this.preco, required this.nome, required this.imagem});
+
+}
+
+//This class is responsible for managing the prices of the flavors and drinks
+// It contains a map for the id of the flavor or drink and the it's respective price
+class Precos{
+
+  late Map<int, double> idPreco;
+
+  Precos(){
+    idPreco = {
+      0: 15.0,
+      1: 15.0,
+      2: 15.0,
+      3: 15.0,
+      4: 15.0,
+      5: 15.0,
+      6: 7.50,
+      7: 7.50,
+      8: 7.50,
+      9: 7.50,
+      10: 3.50,
+    };
+  }
+
+  setPrices(int id, double percentage, bool isDiscount) {
+    double preco = idPreco[id]!;
+    percentage /= 100;
+    if(isDiscount){
+      preco = idPreco[id]! - (idPreco[id]! * percentage);
+    } else {
+      preco = idPreco[id]! + (idPreco[id]! * percentage);
+    }
+    return preco;
+  }
+}
+
 //--------------------------Screens---------------------------//
 //StatelessWidget of the ManagingOrder screen
 class ManagingOrder extends StatelessWidget {
@@ -82,12 +129,18 @@ class _ManagingOrder extends StatefulWidget {
 
 //State of the ManagingOrder screen
 class _ManagingOrderState extends State<_ManagingOrder> {
+
+  //Variables Used
   late List<Sabor> sabores;
+  late List<Bebida> bebidas;
   late String tamanho = "P"; // Default size of the pizza
   final int quantityFlavors;
   List<int> selectedFlavors = [];
+  Map<int, int> selectedBeverages = {};
   late String totalOfFlavorsAvaliable;
   late Pizza pizza;
+  final Precos precos = Precos();
+  late bool _addBeverages = true;
 
   //Popup Warning Exceeded Quantity of Flavors
   // This function is responsible for displaying a warning message when the user tries to select more flavors than allowed
@@ -125,54 +178,92 @@ class _ManagingOrderState extends State<_ManagingOrder> {
         id: 0,
         nome: "Calabresa",
         imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
       Sabor(
         id: 1,
         nome: "Frango",
-        imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        imagem: 'lib/assets/images/frango.png',
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
       Sabor(
         id: 2,
         nome: "Portuguesa",
-        imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        imagem: 'lib/assets/images/portuguesa.png',
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 0, false),
       ),
       Sabor(
         id: 3,
         nome: "Margherita",
-        imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        imagem: 'lib/assets/images/marguerita.png',
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
       Sabor(
         id: 4,
         nome: "Quatro Queijos",
-        imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        imagem: 'lib/assets/images/quatroQueijos.png',
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
       Sabor(
         id: 5,
-        nome: "Vegetariana",
-        imagem: 'lib/assets/images/calabresa.jpg',
-        precoP: 10.0,
-        precoM: 15.0,
-        precoG: 20.0,
+        nome: "Pepperoni",
+        imagem: 'lib/assets/images/pepperoni.png',
+        precoP: precos.setPrices(0, 33.33, true),
+        precoM: precos.setPrices(0, 0, true),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
     ];
     //}
   }
 
+  //Function to set the drinks
+  // This function is responsible for setting the drinks in the list of drinks at the beginning of the screen
+  void setBeverages() {
+    bebidas = [
+      Bebida(
+        id: 6,
+        preco: precos.setPrices(6, 0, true),
+        nome: "Coca-Cola",
+        imagem: 'lib/assets/images/calabresa.jpg',
+      ),
+      Bebida(
+        id: 7,
+        preco: precos.setPrices(7, 0, true),
+        nome: "Guaraná",
+        imagem: 'lib/assets/images/calabresa.jpg',
+      ),
+      Bebida(
+        id: 8,
+        preco: precos.setPrices(8, 0, true),
+        nome: "Fanta",
+        imagem: 'lib/assets/images/calabresa.jpg',
+      ),
+      Bebida(
+        id: 9,
+        preco: precos.setPrices(9, 0, true),
+        nome: "Sprite",
+        imagem: 'lib/assets/images/calabresa.jpg',
+      ),
+      Bebida(
+        id: 10,
+        preco: precos.setPrices(10, 0, true),
+        nome: "Água",
+        imagem: 'lib/assets/images/calabresa.jpg',
+      ),
+    ];
+  }
+
+  //Function to get the price of the flavor
   double getPrice(int id, String tamanho) {
     for (var sabor in sabores) {
       if (sabor.id == id) {
@@ -188,6 +279,7 @@ class _ManagingOrderState extends State<_ManagingOrder> {
     return 0.0; // Return 0.0 if the flavor is not found
   }
 
+  //Function to get the total price of the order
   double getTotalPrice() {
     double total = 0.0;
     for (var sabor in selectedFlavors) {
@@ -196,16 +288,23 @@ class _ManagingOrderState extends State<_ManagingOrder> {
         total = flavorPrice; // Update the total price if the flavor price is greater
       } 
     }
+    for(int i = 0; i < selectedBeverages.length; i++) {
+      int bebidaId = selectedBeverages.keys.elementAt(i);
+      int quantidade = selectedBeverages[bebidaId]!;
+      double preco = bebidas.firstWhere((b) => b.id == bebidaId).preco;
+      total += preco * quantidade; // Add the price of the drink to the total
+    }
     return total; // Return the total price of the pizza
   }
 
   _ManagingOrderState({required this.quantityFlavors}) {
     setFlavors();
+    setBeverages();
     totalOfFlavorsAvaliable = "Faltam escolher ${quantityFlavors} sabores";
     pizza = Pizza(
       id: 0,
       observacao: "",
-      tipoBorda: "",
+      tipoBorda: "Normal",
     );
    }
   @override
@@ -249,6 +348,31 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                   },               
                 ),
                 Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: BorderSide.strokeAlignCenter),
+                  child: Text(
+                    "Escolha o tipo de borda",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                CustomDropdown<String>(
+                  items: ["Normal", "Cheddar", "Requeijão"],
+                  initialItem: "Normal",
+                  onChanged: (value) {
+                    debugPrint("Value: ${value}");
+                    setState(() {
+                      if(value == null || value.compareTo("Normal") == 0){
+                        pizza.tipoBorda = "Normal";
+                      }
+                      else{
+                        pizza.tipoBorda = value;
+                      }
+                    });
+                  },
+                ),
+                Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +409,13 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                         leading: SizedBox(
                           width: 100,
                           height: 100,
-                          child: Image.asset(sabor.imagem, fit: BoxFit.cover),
+                          child: Image.asset(
+                              width: 25,
+                              height: 25,
+                              sabor.imagem,
+                              alignment: Alignment.center,
+
+                          ),
                         ),
                         title: Text(
                           "${sabor.nome} - R\$ ${getPrice(sabor.id, tamanho).toStringAsFixed(2)}",
@@ -318,29 +448,106 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                     );
                   },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: BorderSide.strokeAlignCenter),
-                  child: Text(
-                    "Escolha o tipo de borda",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                if(_addBeverages)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: BorderSide.strokeAlignCenter),
+                    child: Text(
+                      "Opções de Bebidas: ",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                CustomDropdown<String>(
-                  items: ["Normal", "Cheddar", "Requeijão"],
-                  initialItem: "Normal",
+                if(_addBeverages)
+                  ListView.builder(
+                    shrinkWrap:
+                    true,
+                    //Allows the ListView to take up only the space it needs
+                    physics:
+                    NeverScrollableScrollPhysics(),
+                    //Deactivates the internal scroll of the ListView
+                    itemCount: bebidas.length,
+                    // Structs the list with the number of flavors available
+                    itemBuilder: (context, innerIndex) {
+                      final bebida = bebidas[innerIndex];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          leading: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Image.asset(
+                                bebida.imagem, fit: BoxFit.cover),
+                          ),
+                          title: Text(
+                            "${bebida.nome} - R\$ ${bebida.preco
+                                .toStringAsFixed(2)}",
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.remove_circle_outline,
+                                    color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    if (selectedBeverages.containsKey(
+                                        bebida.id) &&
+                                        selectedBeverages[bebida.id]! > 0) {
+                                      selectedBeverages[bebida.id] =
+                                          selectedBeverages[bebida.id]! - 1;
+                                      if (selectedBeverages[bebida.id] == 0) {
+                                        selectedBeverages.remove(bebida.id);
+                                      }
+                                    }
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.add_circle_outline,
+                                    color: Colors.green),
+                                onPressed: () {
+                                  setState(() {
+                                    if (selectedBeverages.containsKey(
+                                        bebida.id)) {
+                                      selectedBeverages[bebida.id] =
+                                          selectedBeverages[bebida.id]! + 1;
+                                    } else {
+                                      selectedBeverages.addEntries([
+                                        MapEntry(bebida.id, 1)
+                                      ]);
+                                    }
+                                  });
+                                },
+                              ),
+                              Text(
+                                "${selectedBeverages.containsKey(bebida.id)
+                                    ? selectedBeverages[bebida.id]!
+                                    : 0}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                SwitchListTile(
+                  title: Text("Desejo Bebidas"),
+                  value: _addBeverages,
                   onChanged: (value) {
                     setState(() {
-                      if(value == null){
-                        pizza.tipoBorda = "Normal";
-                      }
-                      else{
-                        pizza.tipoBorda = value;
+                      _addBeverages = value;
+                      if(!_addBeverages){
+                        selectedBeverages.clear();
                       }
                     });
-                  },               
+                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
