@@ -6,6 +6,7 @@ import 'package:pizza_rush/database/test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'database/order_service.dart';
 import 'main_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
@@ -16,7 +17,7 @@ void main() async {
 
   // Inicializa o Stripe para Android e iOS
   if (Platform.isAndroid || Platform.isIOS) {
-    Stripe.publishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
+    Stripe.publishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
     await Stripe.instance.applySettings();
   }
 

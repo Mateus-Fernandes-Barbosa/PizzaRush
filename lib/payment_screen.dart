@@ -1,11 +1,10 @@
 import 'dart:convert';
+import 'dart:io'; // Adicionado para detecção de IPv4
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
-// URL do servidor local
-const String apiUrl = 'http://192.168.116.81:4242'; // Use 10.0.2.2 para Android emulator
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
@@ -62,7 +61,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   String _errorMessage = '';
   
   // String chave API Stripe
-  final String _stripePublishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
+  final String _stripePublishableKey = dotenv.env['STRIPE_PUBLISHABLE_KEY']!;
   
   // Controladores para os campos do formulário de entrega
   final TextEditingController _nameController = TextEditingController();
@@ -76,13 +75,15 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   bool _isCardFormValid = false;
   stripe.CardFormEditController _cardFormController = stripe.CardFormEditController();
 
+  String apiUrl = ''; // Inicializado como vazio
+
   @override
   void initState() {
     super.initState();
     // Inicialize o Stripe SDK
     initializeStripe();
-    
     _cardFormController.addListener(updateCardFormValidStatus);
+    _detectIPv4(); // Detecta o IPv4 automaticamente
   }
   
   // Atualiza o status de validade do formulário do cartão
@@ -96,6 +97,27 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   Future<void> initializeStripe() async {
     stripe.Stripe.publishableKey = _stripePublishableKey;
     await stripe.Stripe.instance.applySettings();
+  }
+
+  // Função para detectar o IPv4 automaticamente
+  Future<void> _detectIPv4() async {
+    try {
+      for (var interface in await NetworkInterface.list()) {
+        for (var addr in interface.addresses) {
+          if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
+            setState(() {
+              apiUrl = 'http://${addr.address}:4242';
+            });
+            return;
+          }
+        }
+      }
+      throw Exception('Nenhum endereço IPv4 válido encontrado.');
+    } catch (e) {
+      setState(() {
+        apiUrl = 'Erro ao detectar IPv4: ${e.toString()}';
+      });
+    }
   }
 
   // Função para formatar o valor monetário
