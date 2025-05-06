@@ -1,23 +1,25 @@
-import 'package:pizza_rush/database/internal/user.dart';
+import 'package:pizza_rush/database/names/user.dart';
+import 'package:pizza_rush/database/wrappers_table/address.dart';
+import 'package:pizza_rush/database/wrappers_table/user.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'internal/address.dart';
-import 'internal/database_definitions.dart';
-import 'internal/database_helper.dart';
+import 'database_helper.dart';
+import 'constants/default_users.dart';
+import 'names/address.dart';
+import 'database_definitions.dart';
 
 
-enum DefaultUsers {
-  // Store locally without verification, but cant transfer to cloud
-  visitor(0, 'visitor@gmail.com', 'visitor user');
-
-  final int id;
-  final String email;
-  final String previewName;
-  const DefaultUsers(this.id, this.email, this.previewName);
-}
 
 class UserSqlService {
-  // CRUD ON USER
+  static Future<List<User>> getAllUsers() async {
+    final db = await DatabaseHelper.getDatabase();
+    var res = await db.query(
+      SqlTable.user.name,
+      columns: User.columns,
+    );
+    return User.fromQuery(res);
+  }
+
   static Future<int> addUser({
     required int id,
     required String email,
@@ -34,27 +36,6 @@ class UserSqlService {
       conflictAlgorithm: ConflictAlgorithm.fail, // Replaces if same `id` exists
     );
   }
-
-  static Future<void> addUserDefaults() async {
-    Database db = await DatabaseHelper.getDatabase();
-    Batch batch = db.batch();
-
-    for (final user in DefaultUsers.values) {
-      print(user);
-      batch.insert(
-        SqlTable.user.name,
-        {
-          UserNames.id: user.id,
-          UserNames.email: user.email,
-          UserNames.previewName: user.previewName,
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore, // Replaces if same `id` exists
-      );
-    }
-    await batch.commit(noResult: true);
-  }
-
-
 
   static Future<void> updateUser({
     required int id,
@@ -76,6 +57,10 @@ class UserSqlService {
     }
   }
 
+  static Future<void> deleteUser(int id) async {
+    final db = await DatabaseHelper.getDatabase();
+    db.delete(SqlTable.user.name, where: '${UserNames.id} = ?', whereArgs: [id]);
+  }
 
 
   // --------------------------------------------------------
@@ -88,7 +73,7 @@ class UserSqlService {
       where: '${AddressNames.fkUser} = ?',
       whereArgs: [userId],
     );
-    return Address.fromQueryResult(res);
+    return Address.fromQuery(res);
   }
 
 
@@ -117,7 +102,7 @@ class UserSqlService {
 
   static Future<void> updateAddress({
     required int addressId,
-    String? line1,
+    required String line1,
     String? line2,
     String? neighborhood,
     String? city,
@@ -128,7 +113,7 @@ class UserSqlService {
     final db = await DatabaseHelper.getDatabase();
 
     final Map<String, Object?> updates = {};
-    if (line1 != null) updates[AddressNames.line1] = line1;
+    updates[AddressNames.line1] = line1;
     if (line2 != null) updates[AddressNames.line2] = line2;
     if (neighborhood != null) updates[AddressNames.neighborhood] = neighborhood;
     if (city != null) updates[AddressNames.city] = city;
@@ -154,6 +139,7 @@ class UserSqlService {
       whereArgs: [addressId],
     );
   }
+
 
 
 }

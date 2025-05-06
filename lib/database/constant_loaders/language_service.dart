@@ -1,27 +1,26 @@
 
 import 'package:sqflite/sqflite.dart';
 
-import 'internal/database_definitions.dart';
-import 'internal/database_helper.dart';
-import 'internal/language.dart';
+import '../database_definitions.dart';
+import '../database_helper.dart';
+import '../constants/languages.dart';
+import '../names/language.dart';
 
-// Stored locally and refreshed on updates
-enum Languages {
-  ptBr(0, 'pt-BR'),
-  enUs(1, 'en-US');
 
-  final int id;
-  final String acronym;
-  const Languages(this.id, this.acronym);
-
-  static List<String> acronyms() {
-    return Languages.values.map((lang) => lang.acronym).toList();
-  }
-}
-
-class DatabaseLanguage extends DatabaseHelper {
+/* Description:
+ *   Loads languages from database and map their id to acronyms
+ *   Used for displaying respective language of the label of a product
+ *
+ * Warning: Might not be needed as all languages follow static enum of program
+ */
+class StaticLanguageLoader extends DatabaseHelper {
   // Insert example languages (optional)
   static Map<String, int>? _langMap;
+
+  static Future<int> getIdFromEnum(Languages lang) async {
+    _langMap ??= await _getLangIdMap();
+    return _langMap![lang.acronym]!;
+  }
 
   static Future<Map<String, int>> getLangIdMap() async {
     _langMap ??= await _getLangIdMap();
@@ -44,24 +43,6 @@ class DatabaseLanguage extends DatabaseHelper {
     return result;
   }
 
-  static Future<int> getIdFromEnum(Languages lang) async {
-    _langMap ??= await _getLangIdMap();
-    return _langMap![lang.acronym]!;
-  }
-
-
-  static Future<void> _addLanguages(List<String> langs) async {
-    final db = await DatabaseHelper.getDatabase();
-    final batch = db.batch();
-    for (var lang in langs) {
-      batch.insert(
-        SqlTable.language.name,
-        {LanguageNames.lang: lang},
-        conflictAlgorithm: ConflictAlgorithm.ignore, // Avoid duplicate insert
-      );
-    }
-    await batch.commit(noResult: true);
-  }
 
   // Must always be true
   static Future<void> _addLanguagesEnum() async {
@@ -77,6 +58,20 @@ class DatabaseLanguage extends DatabaseHelper {
     await batch.commit(noResult: true);
   }
 
+
+  // DISABLED AS LANGUAGES ARE NOT SUPPOSED TO BE ADDED AT RUNTIME
+  static Future<void> _addLanguages(List<String> langs) async {
+    final db = await DatabaseHelper.getDatabase();
+    final batch = db.batch();
+    for (var lang in langs) {
+      batch.insert(
+        SqlTable.language.name,
+        {LanguageNames.lang: lang},
+        conflictAlgorithm: ConflictAlgorithm.ignore, // Avoid duplicate insert
+      );
+    }
+    await batch.commit(noResult: true);
+  }
 
 
 }

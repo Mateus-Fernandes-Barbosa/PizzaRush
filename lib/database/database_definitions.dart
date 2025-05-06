@@ -23,16 +23,18 @@ enum SqlTable {
     );
   '''),
 
+  // Those field would be better off as not null, but a non blocking parser
+  // from written single liner is too complicated for this prototype
   address('''
     CREATE TABLE `address` (
       `id` integer primary key NOT NULL UNIQUE,
       `line_1` TEXT NOT NULL,
-      `line_2` TEXT NOT NULL,
-      `neighborhood` TEXT NOT NULL,
-      `city` TEXT NOT NULL,
-      `postal_code` TEXT NOT NULL,
-      `state` TEXT NOT NULL,
-      `country` TEXT NOT NULL,
+      `line_2` TEXT NULL,
+      `neighborhood` TEXT NULL,
+      `city` TEXT NULL,
+      `postal_code` TEXT NULL,
+      `state` TEXT NULL,
+      `country` TEXT NULL,
       `fk_user` INTEGER NOT NULL,
       FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`)
     );
@@ -63,9 +65,9 @@ enum SqlTable {
   user_order('''
     CREATE TABLE `user_order` (
       `id` integer primary key NOT NULL UNIQUE,
-      `request_time` REAL NULL,
-      `confirmation_time` REAL NULL,
-      `delivery_time` REAL NULL,
+      `request_time` INTEGER NULL,
+      `confirmation_time` INTEGER NULL,
+      `delivery_time` INTEGER NULL,
       `fk_user` INTEGER NOT NULL,
       FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`)
     );

@@ -1,58 +1,26 @@
-import 'package:pizza_rush/database/internal/user.dart';
+import 'package:pizza_rush/database/names/address.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'internal/address.dart';
-import 'internal/database_definitions.dart';
-import 'internal/database_helper.dart';
-import 'internal/drink/drink.dart';
-import 'internal/drink/drink_price.dart';
+import '../database_helper.dart';
+import '../constants/drink_dummy.dart';
+import '../names/address.dart';
+import '../database_definitions.dart';
 import 'language_service.dart';
+import '../names/drink/drink.dart';
+import '../names/drink/drink_price.dart';
 
 // Would be provided by cloud
-enum DrinkCatalog {
-  cocaZeroCan(0, 'Coca Zero Lata 500ml', 'Coca-cola', null, Languages.ptBr),
-  cocaCan(1, 'Coca Lata 500ml', 'Coca-cola', null, Languages.ptBr),
-  cocaZeroGlassBottle(2, 'Coca Zero Bottle 550ml', 'Coca-cola', null, Languages.ptBr),
-  guaranaGarrafaPet(3, 'Guarana garrafa 2L', 'Ambev', null, Languages.ptBr);
-
-  final int id;
-  final String name;
-  final String brand;
-  final String? description;
-  final Languages langNameEnum;
-  const DrinkCatalog(this.id, this.name, this.brand, this.description, this.langNameEnum);
-  
-  
-
-  static List<String> acronyms() {
-    return Languages.values.map((lang) => lang.acronym).toList();
-  }
-
-  Future<int> get langNameFk async => await DatabaseLanguage.getIdFromEnum(langNameEnum);
-}
-
-enum DrinkPrices {
-  cocaZeroCanPrice1(0, 7.00, '2024-05-26', null, DrinkCatalog.cocaZeroCan),
-  cocaCanPrice1(1, 7.00, '2024-05-26', null, DrinkCatalog.cocaCan),
-  cocaZeroGlassBottlePrice1(2, 14.00, '2024-05-26', null, DrinkCatalog.cocaZeroGlassBottle),
-  guarafaGarrafaPetPrice1(3, 20.00, '2024-05-26', null, DrinkCatalog.guaranaGarrafaPet);
-
-  final int id;
-  final double price;
-  final String startDateStr;
-  final String? endDateStr;
-  final DrinkCatalog fkDrinkEnum;
-  const DrinkPrices(this.id, this.price, this.startDateStr, this.endDateStr, this.fkDrinkEnum);
-
-  int get startDate => DateTime.parse(startDateStr).millisecondsSinceEpoch;
-  int? get endDate => endDateStr != null ? DateTime.parse(endDateStr!).millisecondsSinceEpoch : null;
-  int get fkDrink => fkDrinkEnum.id;
-}
 
 
 
 
-class DrinkCatalogService {
+/* Description:
+ *   Adds drinks and respective current prices into database
+ *   Supposed to be used to support server updates onto products
+ *   For now it only loads static data
+ *
+ */
+class StaticDrinkCatalog {
 
 
   static Future<void> addDrink({

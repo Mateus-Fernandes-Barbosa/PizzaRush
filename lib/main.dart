@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:pizza_rush/database/test.dart';
 // import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // import 'database/internal/database_helper.dart';
 // import 'database/order_service.dart';
@@ -32,6 +33,7 @@ import 'main_screen.dart';
 
 void main() async {
   // Garante que as widgets estão inicializadas
+  database();
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inicializa o Stripe para Android e iOS

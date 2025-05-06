@@ -1,52 +1,21 @@
-import 'package:pizza_rush/database/internal/user.dart';
+import 'package:pizza_rush/database/names/address.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'internal/address.dart';
-import 'internal/database_definitions.dart';
-import 'internal/database_helper.dart';
-import 'internal/drink/drink.dart';
-import 'internal/drink/drink_price.dart';
-import 'internal/pizza/order_pizza.dart';
-import 'internal/pizza/pizza_flavor.dart';
-import 'internal/pizza/pizza_flavor_price.dart';
+import '../database_helper.dart';
+import '../constants/pizza_flavor_dummy.dart';
+import '../names/address.dart';
+import '../database_definitions.dart';
 import 'language_service.dart';
+import '../names/pizza/pizza_flavor.dart';
+import '../names/pizza/pizza_flavor_price.dart';
 
-// Would be provided by cloud
-enum PizzaFlavorCatalog {
-  margueritta(0, 'margueritta', null, Languages.ptBr),
-  quatroQueijos(1, 'quatro queijos', null, Languages.ptBr),
-  calabresa(2, 'Calabresa', null, Languages.ptBr);
-
-  final int id;
-  final String name;
-  final String? description;
-  final Languages nameLang;
-  const PizzaFlavorCatalog(this.id, this.name, this.description, this.nameLang);
-  
-}
-
-enum PizzaFlavorPrices {
-  marguerittaPreco1(0, 7.00, 14.00, 21.00, '2024-05-26', null, PizzaFlavorCatalog.margueritta),
-  quatroQueijosPreco1(1, 8.00, 15.00, 21.00, '2024-05-26', null, PizzaFlavorCatalog.quatroQueijos),
-  calabresaPreco1(2, 6.50, 12.00, 17.5, '2024-05-26', null, PizzaFlavorCatalog.calabresa);
-
-  final int id;
-  final double priceSmall;
-  final double priceMedium;
-  final double priceLarge;
-  final String startDateStr;
-  final String? endDateStr;
-  final PizzaFlavorCatalog fkPizzaFlavor;
-  const PizzaFlavorPrices(this.id, this.priceSmall, this.priceMedium, this.priceLarge, this.startDateStr, this.endDateStr, this.fkPizzaFlavor);
-
-  int get startDate => DateTime.parse(startDateStr).millisecondsSinceEpoch;
-  int? get endDate => endDateStr != null ? DateTime.parse(endDateStr!).millisecondsSinceEpoch : null;
-}
-
-
-
-
-class PizzaFlavorCatalogService {
+/* Description:
+ *   Adds pizza flavor and respective current prices into database
+ *   Supposed to be used to support server updates onto products
+ *   For now it only loads static data
+ *
+ */
+class StaticPizzaFlavorCatalog {
 
 
   static Future<void> addPizza({
@@ -74,9 +43,9 @@ class PizzaFlavorCatalogService {
           PizzaFlavorNames.id: flavor.id,
           PizzaFlavorNames.name: flavor.name,
           PizzaFlavorNames.description: flavor.description,
-          PizzaFlavorNames.fkNameLang: await DatabaseLanguage.getIdFromEnum(flavor.nameLang)
+          PizzaFlavorNames.fkNameLang: await StaticLanguageLoader.getIdFromEnum(flavor.nameLang)
         },
-        conflictAlgorithm: ConflictAlgorithm.replace
+        conflictAlgorithm: ConflictAlgorithm.ignore
       );
       print(flavor);
     }

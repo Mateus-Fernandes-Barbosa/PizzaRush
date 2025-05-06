@@ -1,6 +1,7 @@
-import 'package:pizza_rush/database/drink_catalog_service.dart';
-import 'package:pizza_rush/database/language_service.dart';
-import 'package:pizza_rush/database/pizza_catalog_service.dart';
+import 'package:pizza_rush/database/constant_loaders/drink_catalog_service.dart';
+import 'package:pizza_rush/database/constant_loaders/language_service.dart';
+import 'package:pizza_rush/database/constant_loaders/pizza_catalog_service.dart';
+import 'package:pizza_rush/database/constant_loaders/user_default.dart';
 import 'package:pizza_rush/database/user_profile_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -32,20 +33,14 @@ class DatabaseHelper {
 
   // FOR NOW THE CODE IS NOT ENSURED UNLESS THIS IS ENSURED BEFORE ANY OPERATIONS
   static Future<void> ensureInitialization() async {
+    StaticLanguageLoader.getLangIdMap();
+    UserDefault.addUserDefaults();
 
-    DatabaseLanguage.getLangIdMap();
+    StaticPizzaFlavorCatalog.addPizzasFromCatalog();
+    StaticPizzaFlavorCatalog.addPizzaPriceCatalog();
 
-    UserSqlService.addUserDefaults();
-
-
-    PizzaFlavorCatalogService.addPizzasFromCatalog();
-    PizzaFlavorCatalogService.addPizzaPriceCatalog();
-
-    DrinkCatalogService.addDrinksFromCatalog();
-    DrinkCatalogService.addDrinkPriceCatalog();
-
-
-
+    StaticDrinkCatalog.addDrinksFromCatalog();
+    StaticDrinkCatalog.addDrinkPriceCatalog();
   }
 
 }
