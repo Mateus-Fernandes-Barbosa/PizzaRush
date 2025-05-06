@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 // URL do servidor local
-const String apiUrl = 'http://192.168.100.2:4242'; // Use 10.0.2.2 para Android emulator ou localhost para web/desktop
+const String apiUrl = 'http://IPV4_REDE:4242'; // Use 10.0.2.2 para Android emulator
 
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
@@ -62,7 +62,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   String _errorMessage = '';
   
   // String chave API Stripe
-  final String _stripePublishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
+  final String _stripePublishableKey = 'CHAVE_PUBLICAVEL';
   
   // Controladores para os campos do formulário de entrega
   final TextEditingController _nameController = TextEditingController();
