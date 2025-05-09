@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'managing_order_screen.dart';
+import 'dart:developer';
+import 'map_screen.dart';
 
 class MainScreen extends StatelessWidget {
   @override
@@ -85,6 +87,17 @@ class _MainScreenState extends State<_MainScreen> {
                 ),
               ],
             ),
+            ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                        MaterialPageRoute(
+                          builder: (context) => MapScreen()
+                        )
+                      );
+                    },
+                    child: Text("Teste map")
+                ),
           ],
         ),
       )

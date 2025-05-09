@@ -9,6 +9,9 @@ const app = express();
 const port = process.env.PORT || 4242;
 const stripeClient = stripe(process.env.STRIPE_SECRET_KEY);
 
+// Variável para armazenar o último pedido
+let lastOrder = null;
+
 // Middleware
 app.use(express.json());
 app.use(cors());
@@ -53,10 +56,12 @@ app.post('/create-payment-intent', async (req, res) => {
 app.post('/save-order', async (req, res) => {
   try {
     const orderDetails = req.body;
-    
-    // Aqui você normalmente salvaria os detalhes em um banco de dados
+
+    // Salva os detalhes do pedido na variável
+    lastOrder = orderDetails;
+
     console.log('Pedido recebido:', orderDetails);
-    
+
     // Simulando sucesso
     return res.json({
       success: true,
@@ -66,6 +71,21 @@ app.post('/save-order', async (req, res) => {
   } catch (error) {
     console.error('Erro ao salvar pedido:', error);
     return res.status(500).json({ error: error.message });
+  }
+});
+
+// Rota para obter o último pedido
+app.get('/last-order', (req, res) => {
+  if (lastOrder) {
+    return res.json({
+      success: true,
+      lastOrder
+    });
+  } else {
+    return res.status(404).json({
+      success: false,
+      message: 'Nenhum pedido encontrado.'
+    });
   }
 });
 

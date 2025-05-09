@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:pizza_rush/map_screen.dart';
 
 // URL do servidor local
-const String apiUrl = 'http://192.168.90.203:4242'; // Use 10.0.2.2 para Android emulator
+const String apiUrl = 'http://192.168.0.147:4242'; // Use 10.0.2.2 para Android emulator
 
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
@@ -629,9 +630,13 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.push(
+                  context,
+                MaterialPageRoute(
+                  builder: (context) => MapScreen())
+                );
             },
-            child: Text('Voltar ao Menu Principal'),
+            child: Text('Acompanhar Pedido'),
           ),
         ],
       ),
