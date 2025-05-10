@@ -7,7 +7,13 @@ import 'package:sqflite/sqflite.dart';
  */
 
 enum SqlTable {
-  // Defined by admins. An array is used to store the indexes on startup
+  /* Defined by admins. An array is used to store the indexes on startup.
+   * This is a feature to be thought of in the future, when non regional
+   * names are to be included (for example call the english name for the pizza)
+   * Names are by default given by the regional language (PT-BR) for drinks,
+   * pizza and pizza borders, and auxiliar tables with language links can be used
+   * Auxiliar additional naming tables are not implemented as of now
+   */
   language(''' 
     CREATE TABLE `language` (
       `id` integer primary key NOT NULL UNIQUE,
@@ -34,9 +40,16 @@ enum SqlTable {
       `city` TEXT NULL,
       `postal_code` TEXT NULL,
       `state` TEXT NULL,
-      `country` TEXT NULL,
+      `country` TEXT NULL
+    );
+  '''),
+
+  user_address('''
+    CREATE TABLE `user_address` (
       `fk_user` INTEGER NOT NULL,
-      FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`)
+      `fk_address` INTEGER NOT NULL,
+      FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`),
+      FOREIGN KEY(`fk_address`) REFERENCES `address`(`id`)
     );
   '''),
 
@@ -46,15 +59,15 @@ enum SqlTable {
       `name` TEXT NOT NULL UNIQUE,
       `brand` TEXT NOT NULL,
       `description` TEXT NULL,
-      `fk_name_lang` INTEGER NOT NULL,
-      FOREIGN KEY(`fk_name_lang`) REFERENCES `language`(`id`)
+      `image_url` TEXT NULL
+       
     );
   '''),
 
   drink_price('''
     CREATE TABLE `drink_price` (
       `id` integer primary key NOT NULL UNIQUE,
-      `price` INTEGER NOT NULL,
+      `price` DECIMAL(10, 2) NOT NULL,
       `start_date` INTEGER NOT NULL,
       `fk_drink` INTEGER NOT NULL,
       `end_date` INTEGER NULL,
@@ -62,6 +75,7 @@ enum SqlTable {
     );
   '''),
 
+  //TODO: FINISH HERE
   user_order('''
     CREATE TABLE `user_order` (
       `id` integer primary key NOT NULL UNIQUE,
@@ -69,7 +83,14 @@ enum SqlTable {
       `confirmation_time` INTEGER NULL,
       `delivery_time` INTEGER NULL,
       `fk_user` INTEGER NOT NULL,
-      FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`)
+      `fk_address` INTEGER NOT NULL,
+      
+      `primary_contact_phone` TEXT NULL,
+      `primary_contact_name` TEXT NULL,
+      `primary_contact_observations` TEXT NULL,
+      
+      FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`),
+      FOREIGN KEY(`fk_address`) REFERENCES `address`(`id`)
     );
   '''),
 
@@ -98,8 +119,15 @@ enum SqlTable {
       `id` integer primary key NOT NULL UNIQUE,
       `name` TEXT NOT NULL,
       `description` TEXT NULL,
-      `fk_name_lang` INTEGER NOT NULL,
-      FOREIGN KEY(`fk_name_lang`) REFERENCES `language`(`id`)
+      `image_url` TEXT NULL
+    );
+  '''),
+  pizza_border('''
+    CREATE TABLE "pizza_border" (
+      `id` integer primary key NOT NULL UNIQUE,
+      `name` TEXT NOT NULL,
+      `description` TEXT NULL,
+      `image_url` TEXT NULL
     );
   '''),
 
@@ -113,15 +141,19 @@ enum SqlTable {
       `end_date` INTEGER NULL,
       `fk_pizza_flavor` INTEGER NOT NULL,
       FOREIGN KEY(`fk_pizza_flavor`) REFERENCES `pizza_flavor`(`id`)
-    );
+    ); 
   '''),
 
+  // BORDER WOULD BE BETTER AS A TABLE
   pizza_flavor_percentage('''
     CREATE TABLE 'pizza_flavor_percentage' (
       'percentage' INTEGER NOT NULL,
       'fk_pizza_flavor_price' INTEGER NOT NULL,
+      'fk_pizza_border' INTEGER NOT NULL,
       'fk_order_pizza' INTEGER NOT NULL,
+      
       FOREIGN KEY('fk_pizza_flavor_price') REFERENCES "pizza_flavor_price"('id'),
+      FOREIGN KEY('fk_pizza_border') REFERENCES "pizza_border"('id'),
       FOREIGN KEY('fk_order_pizza') REFERENCES "order_pizza"('id')
     );
   ''');

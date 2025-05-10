@@ -2,7 +2,9 @@
 class PizzaFlavorPercentageNames {
   static const String percentage = 'percentage';
   static const String fkFlavorPrice = 'fk_pizza_flavor_price';
+  static const String fkPizzaBorder = 'fk_pizza_border';
   static const String fkOrderPizza = 'fk_order_pizza';
+
 
 
 }
@@ -13,6 +15,9 @@ class PizzaFlavorPercentageGets {
 
   static int fkFlavorPrice(Map<String, dynamic> data) =>
       data[PizzaFlavorPercentageNames.fkFlavorPrice] as int;
+
+  static int fkPizzaBorder(Map<String, dynamic> data) =>
+      data[PizzaFlavorPercentageNames.fkPizzaBorder] as int;
 
   static int fkOrderPizza(Map<String, dynamic> data) =>
       data[PizzaFlavorPercentageNames.fkOrderPizza] as int;

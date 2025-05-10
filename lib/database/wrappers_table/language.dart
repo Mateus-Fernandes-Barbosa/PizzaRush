@@ -1,4 +1,6 @@
-import '../names/language.dart';
+import 'package:pizza_rush/database/names/language.dart';
+
+// ABORTED UNTIL ADDITIONAL NAMES ARE ADDED
 
 class Language {
   static List<String> columns = [

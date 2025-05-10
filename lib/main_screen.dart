@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pizza_rush/widgets/navigation_helper.dart';
+import 'history.dart';
 import 'managing_order_screen.dart';
 import 'dart:developer';
 import 'map_screen.dart';
@@ -111,11 +113,8 @@ class _MainScreenState extends State<_MainScreen> {
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ManagingOrder(quantityFlavors: 1)
-                          )
+                      NavigationHelper.pushNavigatorNoTransition(
+                          context, HistoryPage()
                       );
                     },
                     child: Text(
