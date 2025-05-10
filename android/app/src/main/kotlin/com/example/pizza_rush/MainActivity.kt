@@ -1,4 +1,4 @@
-package com.example.pizza_rush
+package com.pizzarush.pizza_rush
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

@@ -15,9 +15,6 @@ import 'database_helper.dart';
 
 
 Future<void> database() async {
-  // Initialize FFI (required on desktop or Dart CLI)
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
 
   final dbPath = await getDatabasesPath();
   print("📂 SQLite database path: $dbPath");

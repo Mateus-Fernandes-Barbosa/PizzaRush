@@ -7,7 +7,7 @@ import 'package:pizza_rush/map_screen.dart';
 
 // URL do servidor local
 const String apiUrl =
-    'http://192.168.0.19:4242'; // Use 10.0.2.2 para Android emulator
+    'http://192.168.0.221:4242'; // Use 10.0.2.2 para Android emulator
 
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
