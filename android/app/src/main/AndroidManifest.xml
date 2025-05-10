@@ -1,8 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<<<<<<< HEAD
     <application
         android:label="pizza_rush"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+=======
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <application
+        android:label="pizza_rush"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.AppCompat.Light"
+        android:enableOnBackInvokedCallback="true">
+>>>>>>> 89f7359e064099fcaec79a1c253381d43a31fae9
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,6 +42,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCO6uYzuo2O0PT24NV0kO5EX9Fye6iOhH0" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
