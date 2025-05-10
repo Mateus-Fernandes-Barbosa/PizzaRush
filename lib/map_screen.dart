@@ -27,7 +27,7 @@ class _MapScreenState extends State<_MapScreen> {
   Set<Polyline> _polylines = {};
   Set<Marker> _markers = {};
   double? _estimatedTime; // Store the estimated time for the BottomSheet
-  final String apiUrl = 'http://192.168.0.147:4242'; // Alterado para HTTP para evitar problemas de handshake
+  final String apiUrl = 'http://192.168.0.19:4242'; // Alterado para HTTP para evitar problemas de handshake
 
   @override
   void initState() {

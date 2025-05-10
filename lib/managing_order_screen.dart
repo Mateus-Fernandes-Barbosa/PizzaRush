@@ -77,17 +77,17 @@ class Precos{
 
   Precos(){
     idPreco = {
-      0: 15.0,
-      1: 15.0,
-      2: 15.0,
-      3: 15.0,
-      4: 15.0,
-      5: 15.0,
-      6: 7.50,
-      7: 7.50,
-      8: 7.50,
-      9: 7.50,
-      10: 3.50,
+      0: 40.0,
+      1: 40.0,
+      2: 40.0,
+      3: 40.0,
+      4: 40.0,
+      5: 40.0,
+      6: 13.50,
+      7: 13.50,
+      8: 13.50,
+      9: 13.50,
+      10: 7.50,
     };
   }
 
@@ -196,7 +196,7 @@ class _ManagingOrderState extends State<_ManagingOrder> {
         imagem: 'lib/assets/images/portuguesa.png',
         precoP: precos.setPrices(0, 33.33, true),
         precoM: precos.setPrices(0, 0, true),
-        precoG: precos.setPrices(0, 0, false),
+        precoG: precos.setPrices(0, 33.33, false),
       ),
       Sabor(
         id: 3,
@@ -234,31 +234,31 @@ class _ManagingOrderState extends State<_ManagingOrder> {
         id: 6,
         preco: precos.setPrices(6, 0, true),
         nome: "Coca-Cola",
-        imagem: 'lib/assets/images/calabresa.jpg',
+        imagem: 'lib/assets/images/coca.png',
       ),
       Bebida(
         id: 7,
         preco: precos.setPrices(7, 0, true),
         nome: "Guaraná",
-        imagem: 'lib/assets/images/calabresa.jpg',
+        imagem: 'lib/assets/images/guarana.png',
       ),
       Bebida(
         id: 8,
         preco: precos.setPrices(8, 0, true),
         nome: "Fanta",
-        imagem: 'lib/assets/images/calabresa.jpg',
+        imagem: 'lib/assets/images/fanta.png',
       ),
       Bebida(
         id: 9,
         preco: precos.setPrices(9, 0, true),
         nome: "Sprite",
-        imagem: 'lib/assets/images/calabresa.jpg',
+        imagem: 'lib/assets/images/sprite.png',
       ),
       Bebida(
         id: 10,
         preco: precos.setPrices(10, 0, true),
         nome: "Água",
-        imagem: 'lib/assets/images/calabresa.jpg',
+        imagem: 'lib/assets/images/agua.png',
       ),
     ];
   }
@@ -478,7 +478,8 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                             width: 100,
                             height: 100,
                             child: Image.asset(
-                                bebida.imagem, fit: BoxFit.cover),
+                                bebida.imagem,
+                            ),
                           ),
                           title: Text(
                             "${bebida.nome} - R\$ ${bebida.preco
@@ -538,6 +539,7 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                   ),
 
                 SwitchListTile(
+                  activeColor: Colors.red,
                   title: Text("Desejo Bebidas"),
                   value: _addBeverages,
                   onChanged: (value) {
@@ -585,12 +587,28 @@ class _ManagingOrderState extends State<_ManagingOrder> {
           children: [
             Expanded(
               child: ElevatedButton(
+
                 onPressed: selectedFlavors.length == quantityFlavors 
                   ? () {
                       List<PizzaSabor> pizzaSabores = [];
                       List<Map<String, dynamic>> orderItems = [];
+                      List<Map<String, dynamic>> orderBeverages = [];
                       
                       double total = getTotalPrice();
+
+                      for(int i = 0; i < selectedBeverages.length; i++){
+                        int bebidaId = selectedBeverages.keys.elementAt(i);
+                        int quantidade = selectedBeverages[bebidaId]!;
+                        double preco = bebidas.firstWhere((b) => b.id == bebidaId).preco;
+                        String nome = bebidas.firstWhere((b) => b.id == bebidaId).nome;
+
+                        orderBeverages.add({
+                          'id': bebidaId,
+                          'nome': nome,
+                          'preco': preco,
+                          'quantidade': quantidade,
+                        });
+                      }
                       
                       for(int i = 0; i < selectedFlavors.length; i++){
                         int saborId = selectedFlavors[i];
@@ -610,6 +628,8 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                           'preco': preco,
                         });
                       }
+
+
                       
                       // Navegação para a tela de pagamento
                       Navigator.push(
@@ -618,6 +638,7 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                           builder: (context) => PaymentScreen(
                             totalPrice: total,
                             orderItems: orderItems,
+                            orderBeverages: orderBeverages,
                             observations: pizza.observacao,
                             crustType: pizza.tipoBorda,
                             size: tamanho,
@@ -628,7 +649,7 @@ class _ManagingOrderState extends State<_ManagingOrder> {
                   : null, // Botão desabilitado se não tiver selecionado todos os sabores
                 child: Text("Finalizar Pedido"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedFlavors.length == quantityFlavors ? Theme.of(context).primaryColor : Colors.grey,
+                  backgroundColor: Colors.red,//selectedFlavors.length == quantityFlavors ? Theme.of(context).primaryColor : Colors.grey,
                   foregroundColor: Colors.white,
                 ),
               ),

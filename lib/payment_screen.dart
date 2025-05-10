@@ -6,11 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:pizza_rush/map_screen.dart';
 
 // URL do servidor local
-const String apiUrl = 'http://192.168.0.147:4242'; // Use 10.0.2.2 para Android emulator
+const String apiUrl =
+    'http://192.168.0.19:4242'; // Use 10.0.2.2 para Android emulator
 
 class PaymentScreen extends StatelessWidget {
   final double totalPrice;
   final List<Map<String, dynamic>> orderItems;
+  final List<Map<String, dynamic>> orderBeverages;
   final String observations;
   final String crustType;
   final String size;
@@ -19,6 +21,7 @@ class PaymentScreen extends StatelessWidget {
     Key? key,
     required this.totalPrice,
     required this.orderItems,
+    required this.orderBeverages,
     required this.observations,
     required this.crustType,
     required this.size,
@@ -29,6 +32,7 @@ class PaymentScreen extends StatelessWidget {
     return _PaymentScreen(
       totalPrice: totalPrice,
       orderItems: orderItems,
+      orderBeverages: orderBeverages,
       observations: observations,
       crustType: crustType,
       size: size,
@@ -39,6 +43,7 @@ class PaymentScreen extends StatelessWidget {
 class _PaymentScreen extends StatefulWidget {
   final double totalPrice;
   final List<Map<String, dynamic>> orderItems;
+  final List<Map<String, dynamic>> orderBeverages;
   final String observations;
   final String crustType;
   final String size;
@@ -46,6 +51,7 @@ class _PaymentScreen extends StatefulWidget {
   _PaymentScreen({
     required this.totalPrice,
     required this.orderItems,
+    required this.orderBeverages,
     required this.observations,
     required this.crustType,
     required this.size,
@@ -61,31 +67,33 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   String _paymentMethod = 'Cartão de Crédito';
   bool _isPaymentSuccessful = false;
   String _errorMessage = '';
-  
+
   // String chave API Stripe
-  final String _stripePublishableKey = 'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
-  
+  final String _stripePublishableKey =
+      'pk_test_51RKTqQGdX2861DLQEnFTJ31HtmKYew42HqsuF0CwNCtpXhcYmkAM3AqIRVCLfmG8S8uOcCAe7B9a7R9nftwVOsmz00Kh1nzjiw';
+
   // Controladores para os campos do formulário de entrega
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  
+
   // Controladores para os campos de cartão separados
   final TextEditingController _cardHolderController = TextEditingController();
-  
+
   // Variáveis para o Stripe
   bool _isCardFormValid = false;
-  stripe.CardFormEditController _cardFormController = stripe.CardFormEditController();
+  stripe.CardFormEditController _cardFormController =
+      stripe.CardFormEditController();
 
   @override
   void initState() {
     super.initState();
     // Inicialize o Stripe SDK
     initializeStripe();
-    
+
     _cardFormController.addListener(updateCardFormValidStatus);
   }
-  
+
   // Atualiza o status de validade do formulário do cartão
   void updateCardFormValidStatus() {
     setState(() {
@@ -101,7 +109,10 @@ class _PaymentScreenState extends State<_PaymentScreen> {
 
   // Função para formatar o valor monetário
   String formatCurrency(double amount) {
-    final formatCurrency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final formatCurrency = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+    );
     return formatCurrency.format(amount);
   }
 
@@ -126,28 +137,32 @@ class _PaymentScreenState extends State<_PaymentScreen> {
         if (!_isCardFormValid) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Por favor, preencha os dados do cartão corretamente.';
+            _errorMessage =
+                'Por favor, preencha os dados do cartão corretamente.';
           });
           return;
         }
-        
+
         // Etapa 1: Criar intent de pagamento no servidor
         final paymentIntentResult = await _createPaymentIntent();
-        
+
         // Etapa 2: Preparar os dados de cobrança
         final billingDetails = stripe.BillingDetails(
-          name: _cardHolderController.text.isNotEmpty ? _cardHolderController.text : _nameController.text,
+          name:
+              _cardHolderController.text.isNotEmpty
+                  ? _cardHolderController.text
+                  : _nameController.text,
           phone: _phoneController.text,
           address: stripe.Address(
             line1: _addressController.text,
             line2: '',
-            city: 'Cidade',
-            state: 'Estado',
+            city: 'Belo Horizonte',
+            state: 'Minas Gerais',
             postalCode: '00000-000',
             country: 'BR',
           ),
         );
-        
+
         // Etapa 3: Confirmar o pagamento com o Stripe SDK
         await stripe.Stripe.instance.confirmPayment(
           paymentIntentClientSecret: paymentIntentResult['clientSecret'],
@@ -157,15 +172,14 @@ class _PaymentScreenState extends State<_PaymentScreen> {
             ),
           ),
         );
-  
+
         // Se chegou até aqui sem exceções, o pagamento foi bem-sucedido
         await _saveOrderToDatabase();
-        
+
         setState(() {
           _isPaymentSuccessful = true;
           _isLoading = false;
         });
-        
       } catch (e) {
         setState(() {
           _isLoading = false;
@@ -195,16 +209,13 @@ class _PaymentScreenState extends State<_PaymentScreen> {
       final response = await http.post(
         Uri.parse('$apiUrl/create-payment-intent'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'amount': widget.totalPrice,
-          'currency': 'brl',
-        }),
+        body: jsonEncode({'amount': widget.totalPrice, 'currency': 'brl'}),
       );
-      
+
       if (response.statusCode != 200) {
         throw Exception('Erro no servidor: ${response.body}');
       }
-      
+
       return jsonDecode(response.body);
     } catch (e) {
       throw Exception('Erro na comunicação com servidor: ${e.toString()}');
@@ -226,18 +237,18 @@ class _PaymentScreenState extends State<_PaymentScreen> {
       'order_date': DateTime.now().toIso8601String(),
       'status': _paymentMethod == 'Dinheiro' ? 'pending_payment' : 'paid',
     };
-    
+
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/save-order'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(orderDetails),
       );
-      
+
       if (response.statusCode != 200) {
         throw Exception('Falha ao salvar o pedido');
       }
-      
+
       // Pedido salvo com sucesso
       return;
     } catch (e) {
@@ -250,40 +261,40 @@ class _PaymentScreenState extends State<_PaymentScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Pagamento Concluído'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 64),
-            SizedBox(height: 16),
-            Text('Seu pagamento foi processado com sucesso!'),
-            SizedBox(height: 8),
-            Text('O seu pedido está sendo preparado.'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Voltar para a tela principal
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-            child: Text('Voltar ao Menu Principal'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Pagamento Concluído'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 64),
+                SizedBox(height: 16),
+                Text('Seu pagamento foi processado com sucesso!'),
+                SizedBox(height: 8),
+                Text('O seu pedido está sendo preparado.'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Voltar para a tela principal
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                child: Text('Voltar ao Menu Principal'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Pagamento'),
-      ),
-      body: _isPaymentSuccessful
-          ? _buildPaymentSuccessfulView()
-          : _buildPaymentFormView(),
+      appBar: AppBar(title: Text('Pagamento')),
+      body:
+          _isPaymentSuccessful
+              ? _buildPaymentSuccessfulView()
+              : _buildPaymentFormView(),
     );
   }
 
@@ -296,86 +307,116 @@ class _PaymentScreenState extends State<_PaymentScreen> {
         children: [
           // Resumo do pedido
           _buildOrderSummary(),
-          
+
           SizedBox(height: 24),
-          
+
           // Informações de entrega
           Text(
             'Informações para Entrega',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
-          
+
           // Nome
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
               labelText: 'Nome',
+              labelStyle: TextStyle(color: Colors.black),
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person),
+              prefixIcon: Icon(
+                  Icons.person,
+                  color: Colors.red,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
             ),
+            cursorColor: Colors.red,
           ),
           SizedBox(height: 12),
-          
+
           // Telefone
           TextField(
             controller: _phoneController,
             decoration: InputDecoration(
               labelText: 'Telefone',
+              labelStyle: TextStyle(color: Colors.black),
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.phone),
+              prefixIcon: Icon(
+                Icons.phone,
+                color: Colors.red,),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
             ),
+            cursorColor: Colors.red,
             keyboardType: TextInputType.phone,
           ),
           SizedBox(height: 12),
-          
+
           // Endereço
           TextField(
             controller: _addressController,
             decoration: InputDecoration(
               labelText: 'Endereço Completo',
+              labelStyle: TextStyle(color: Colors.black),
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.home),
+              prefixIcon: Icon(
+                  Icons.home,
+                  color: Colors.red,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
             ),
+            cursorColor: Colors.red,
             maxLines: 2,
           ),
           SizedBox(height: 24),
-          
+
           // Método de pagamento
           Text(
             'Método de Pagamento',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
-          
+
           // Opções de pagamento
           _buildPaymentOptions(),
-          
+
           if (_errorMessage.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-              ),
+              child: Text(_errorMessage, style: TextStyle(color: Colors.red)),
             ),
-          
+
           SizedBox(height: 24),
-          
+
           // Botão de pagamento
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               onPressed: _isLoading ? null : processPayment,
-              child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text(
-                      'Finalizar Pagamento - ${formatCurrency(widget.totalPrice)}',
-                      style: TextStyle(fontSize: 16),
-                    ),
+              child:
+                  _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                        'Finalizar Pagamento - ${formatCurrency(widget.totalPrice)}',
+                        style: TextStyle(fontSize: 16),
+                      ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -391,6 +432,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RadioListTile<String>(
+          activeColor: Colors.red,
           title: Text('Cartão de Crédito'),
           value: 'Cartão de Crédito',
           groupValue: _paymentMethod,
@@ -400,7 +442,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
             });
           },
         ),
-        
+
         // Campos de cartão de crédito - aparecem apenas quando "Cartão de Crédito" está selecionado
         if (_paymentMethod == 'Cartão de Crédito')
           Container(
@@ -417,7 +459,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 SizedBox(height: 12),
-                
+
                 // Usando CardFormField para campos separados
                 stripe.CardFormField(
                   controller: _cardFormController,
@@ -429,10 +471,10 @@ class _PaymentScreenState extends State<_PaymentScreen> {
                     fontSize: 16,
                     placeholderColor: Colors.grey,
                     backgroundColor: Colors.white,
-                    cursorColor: Theme.of(context).primaryColor,
+                    cursorColor: Colors.red,
                   ),
                 ),
-                
+
                 // Mensagem sobre cartões de teste
                 Container(
                   padding: EdgeInsets.all(8),
@@ -458,8 +500,9 @@ class _PaymentScreenState extends State<_PaymentScreen> {
               ],
             ),
           ),
-          
+
         RadioListTile<String>(
+          activeColor: Colors.red,
           title: Text('Dinheiro'),
           value: 'Dinheiro',
           groupValue: _paymentMethod,
@@ -470,6 +513,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           },
         ),
         RadioListTile<String>(
+          activeColor: Colors.red,
           title: Text('Pix'),
           value: 'Pix',
           groupValue: _paymentMethod,
@@ -479,7 +523,7 @@ class _PaymentScreenState extends State<_PaymentScreen> {
             });
           },
         ),
-        
+
         // Exibir QR Code quando Pix estiver selecionado
         if (_paymentMethod == 'Pix')
           Container(
@@ -510,7 +554,10 @@ class _PaymentScreenState extends State<_PaymentScreen> {
                         Icon(Icons.qr_code_2, size: 100),
                         SizedBox(height: 8),
                         Text('QR Code PIX'),
-                        Text('(Simulação)', style: TextStyle(color: Colors.grey)),
+                        Text(
+                          '(Simulação)',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -542,42 +589,76 @@ class _PaymentScreenState extends State<_PaymentScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Divider(),
-            
+
             // Lista de itens do pedido
-            ...widget.orderItems.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(item['nome']),
-                  Text(formatCurrency(item['preco'])),
-                ],
+            ...widget.orderItems.map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(item['nome']),
+                    Text(formatCurrency(item['preco'])),
+                  ],
+                ),
               ),
-            )),
-            
+            ),
+
             Divider(),
-            
+
             // Detalhes do tamanho e borda
             Padding(
               padding: const EdgeInsets.only(bottom: 4.0),
               child: Row(
                 children: [
-                  Text('Tamanho: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Tamanho: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   Text(_getSizeText(widget.size)),
                 ],
               ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.only(bottom: 4.0),
               child: Row(
                 children: [
-                  Text('Borda: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Borda: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   Text(widget.crustType),
                 ],
               ),
             ),
-            
+
+            if(widget.orderBeverages.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                  children: [
+                    Text(
+                      'Bebidas: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ...widget.orderBeverages.map(
+                    (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if(item['quantidade'] >= 1)
+                        Text('${item['quantidade'].toString()}x ${item['nome']}'),
+                      //Text(item['nome']),
+                      Text(formatCurrency(item['preco'])),
+                    ],
+                  ),
+                ),
+            ),
             // Observações, se houver
             if (widget.observations.isNotEmpty)
               Padding(
@@ -585,19 +666,25 @@ class _PaymentScreenState extends State<_PaymentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Observações: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Observações: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Text(widget.observations),
                   ],
                 ),
               ),
-              
+
             Divider(),
-            
+
             // Total
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  'Total:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 Text(
                   formatCurrency(widget.totalPrice),
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -631,10 +718,9 @@ class _PaymentScreenState extends State<_PaymentScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.push(
-                  context,
-                MaterialPageRoute(
-                  builder: (context) => MapScreen())
-                );
+                context,
+                MaterialPageRoute(builder: (context) => MapScreen()),
+              );
             },
             child: Text('Acompanhar Pedido'),
           ),

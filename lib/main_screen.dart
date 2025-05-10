@@ -24,12 +24,22 @@ class _MainScreenState extends State<_MainScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            Text(
+              "Clique para um novo pedido: ",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -38,9 +48,20 @@ class _MainScreenState extends State<_MainScreen> {
                           )
                         );
                       },
-                      child: Text("Quatro Sabores")
+                      child: Text(
+                          "Quatro Sabores",
+                            style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )
+
+                      )
                   ),
                   ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
                       onPressed: () {
                         Navigator.push(
                             context,
@@ -49,9 +70,19 @@ class _MainScreenState extends State<_MainScreen> {
                             )
                         );
                       },
-                      child: Text("Dois Sabores")
+                      child: Text(
+                          "Dois Sabores",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )
+                      )
                   ),
                   ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
                       onPressed: () {
                         Navigator.push(
                             context,
@@ -60,7 +91,14 @@ class _MainScreenState extends State<_MainScreen> {
                             )
                         );
                       },
-                      child: Text("Um sabor")
+                      child: Text(
+                          "Um sabor",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )
+                      )
                   ),
                 ],
               ),
@@ -69,12 +107,9 @@ class _MainScreenState extends State<_MainScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: () {
-                      debugPrint("Banana");
-                    },
-                    child: Text("Histórico de Pedidos")
-                ),
-                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
                     onPressed: () {
                       Navigator.push(
                           context,
@@ -83,7 +118,14 @@ class _MainScreenState extends State<_MainScreen> {
                           )
                       );
                     },
-                    child: Text("Histórico de Pedidos")
+                    child: Text(
+                        "Histórico de Pedidos",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                    )
                 ),
               ],
             ),
