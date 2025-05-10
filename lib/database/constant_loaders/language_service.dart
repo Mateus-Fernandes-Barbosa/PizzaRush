@@ -17,15 +17,18 @@ class StaticLanguageLoader extends DatabaseHelper {
   // Insert example languages (optional)
   static Map<String, int>? _langMap;
 
-  static Future<int> getIdFromEnum(Languages lang) async {
-    _langMap ??= await _getLangIdMap();
-    return _langMap![lang.acronym]!;
-  }
 
-  static Future<Map<String, int>> getLangIdMap() async {
-    _langMap ??= await _getLangIdMap();
-    return _langMap!;
-  }
+  // DISABLED FOR NOW
+
+  // static Future<int> getIdFromEnum(Languages lang) async {
+  //   _langMap ??= await _getLangIdMap();
+  //   return _langMap![lang.acronym]!;
+  // }
+  //
+  // static Future<Map<String, int>> getLangIdMap() async {
+  //   _langMap ??= await _getLangIdMap();
+  //   return _langMap!;
+  // }
 
   // Fetch all languages and return as Map<lang, id>
   static Future<Map<String, int>> _getLangIdMap() async {
@@ -53,21 +56,6 @@ class StaticLanguageLoader extends DatabaseHelper {
         SqlTable.language.name,
         {LanguageNames.id: lang.id, LanguageNames.lang: lang.acronym},
         conflictAlgorithm: ConflictAlgorithm.ignore
-      );
-    }
-    await batch.commit(noResult: true);
-  }
-
-
-  // DISABLED AS LANGUAGES ARE NOT SUPPOSED TO BE ADDED AT RUNTIME
-  static Future<void> _addLanguages(List<String> langs) async {
-    final db = await DatabaseHelper.getDatabase();
-    final batch = db.batch();
-    for (var lang in langs) {
-      batch.insert(
-        SqlTable.language.name,
-        {LanguageNames.lang: lang},
-        conflictAlgorithm: ConflictAlgorithm.ignore, // Avoid duplicate insert
       );
     }
     await batch.commit(noResult: true);

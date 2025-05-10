@@ -1,8 +1,9 @@
+import 'package:pizza_rush/database/constants/default_pizza_border.dart';
 import 'package:pizza_rush/database/names/address.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../database_helper.dart';
-import '../constants/pizza_flavor_dummy.dart';
+import '../constants/default_pizza_flavor.dart';
 import '../names/address.dart';
 import '../database_definitions.dart';
 import 'language_service.dart';
@@ -18,21 +19,6 @@ import '../names/pizza/pizza_flavor_price.dart';
 class StaticPizzaFlavorCatalog {
 
 
-  static Future<void> addPizza({
-    required int id,
-    required String name,
-    required String? description,
-    required int fkNameLang,
-  }) async {
-    final db = await DatabaseHelper.getDatabase();
-    await db.insert(SqlTable.pizza_flavor.name, {
-      PizzaFlavorNames.id: id,
-      PizzaFlavorNames.name: name,
-      PizzaFlavorNames.description: description,
-      PizzaFlavorNames.fkNameLang: fkNameLang
-    });
-  }
-
   static Future<void> addPizzasFromCatalog() async {
     final db = await DatabaseHelper.getDatabase();
     final batch = db.batch();
@@ -43,7 +29,7 @@ class StaticPizzaFlavorCatalog {
           PizzaFlavorNames.id: flavor.id,
           PizzaFlavorNames.name: flavor.name,
           PizzaFlavorNames.description: flavor.description,
-          PizzaFlavorNames.fkNameLang: await StaticLanguageLoader.getIdFromEnum(flavor.nameLang)
+          PizzaFlavorNames.imageUrl: flavor.imageUrl
         },
         conflictAlgorithm: ConflictAlgorithm.ignore
       );
@@ -56,26 +42,6 @@ class StaticPizzaFlavorCatalog {
   //----------------------------------------------
   // Price
 
-  static Future<void> add({
-    required int id,
-    required double priceSmall,
-    required double priceMedium,
-    required double priceLarge,
-    required int startDate,
-    required int? endDate,
-    required int fkPizzaFlavor,
-  }) async {
-    final db = await DatabaseHelper.getDatabase();
-    await db.insert(SqlTable.pizza_flavor_price.name, {
-      PizzaFlavorPriceNames.id: id,
-      PizzaFlavorPriceNames.priceSmall: priceSmall,
-      PizzaFlavorPriceNames.priceMedium: priceMedium,
-      PizzaFlavorPriceNames.priceLarge: priceLarge,
-      PizzaFlavorPriceNames.startDate: startDate,
-      PizzaFlavorPriceNames.endDate: endDate,
-      PizzaFlavorPriceNames.fkPizzaFlavor: fkPizzaFlavor
-    });
-  }
 
 
   static Future<void> addPizzaPriceCatalog() async {
@@ -91,10 +57,31 @@ class StaticPizzaFlavorCatalog {
           PizzaFlavorPriceNames.priceLarge: flavor.priceLarge,
           PizzaFlavorPriceNames.startDate: flavor.startDate,
           PizzaFlavorPriceNames.endDate: flavor.endDate,
-          PizzaFlavorPriceNames.fkPizzaFlavor: flavor.fkPizzaFlavor.id
+          PizzaFlavorPriceNames.fkPizzaFlavor: flavor.fkPizzaFlavor
         },
         conflictAlgorithm: ConflictAlgorithm.ignore
       );
+    }
+    await batch.commit(noResult: true);
+  }
+
+
+
+  static Future<void> addPizzasBorders() async {
+    final db = await DatabaseHelper.getDatabase();
+    final batch = db.batch();
+    for (var border in PizzaBorderCatalog.values) {
+      batch.insert(
+          SqlTable.pizza_border.name,
+          {
+            PizzaFlavorNames.id: border.id,
+            PizzaFlavorNames.name: border.name,
+            PizzaFlavorNames.description: border.description,
+            PizzaFlavorNames.imageUrl: border.imageUrl
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore
+      );
+      print(border);
     }
     await batch.commit(noResult: true);
   }

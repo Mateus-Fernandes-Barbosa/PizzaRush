@@ -1,8 +1,7 @@
 import 'package:pizza_rush/database/constant_loaders/drink_catalog_service.dart';
 import 'package:pizza_rush/database/constant_loaders/language_service.dart';
 import 'package:pizza_rush/database/constant_loaders/pizza_catalog_service.dart';
-import 'package:pizza_rush/database/constant_loaders/user_default.dart';
-import 'package:pizza_rush/database/user_profile_service.dart';
+import 'package:pizza_rush/database/constant_loaders/user_address.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'database_definitions.dart';
@@ -33,11 +32,12 @@ class DatabaseHelper {
 
   // FOR NOW THE CODE IS NOT ENSURED UNLESS THIS IS ENSURED BEFORE ANY OPERATIONS
   static Future<void> ensureInitialization() async {
-    StaticLanguageLoader.getLangIdMap();
+    AddressDefault.addAddressDefaults();
     UserDefault.addUserDefaults();
 
     StaticPizzaFlavorCatalog.addPizzasFromCatalog();
     StaticPizzaFlavorCatalog.addPizzaPriceCatalog();
+    StaticPizzaFlavorCatalog.addPizzasBorders();
 
     StaticDrinkCatalog.addDrinksFromCatalog();
     StaticDrinkCatalog.addDrinkPriceCatalog();

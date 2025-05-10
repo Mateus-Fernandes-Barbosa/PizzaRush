@@ -16,13 +16,12 @@ class PizzaFlavorPriceGets {
       data[PizzaFlavorPriceNames.id] as int;
 
   static double priceSmall(Map<String, dynamic> data) =>
-      data[PizzaFlavorPriceNames.priceSmall] as double;
+      (data[PizzaFlavorPriceNames.priceSmall] as num).toDouble();
 
   static double priceMedium(Map<String, dynamic> data) =>
-      data[PizzaFlavorPriceNames.priceMedium] as double;
-
+      (data[PizzaFlavorPriceNames.priceMedium] as num).toDouble();
   static double priceLarge(Map<String, dynamic> data) =>
-      data[PizzaFlavorPriceNames.priceLarge] as double;
+      (data[PizzaFlavorPriceNames.priceLarge] as num).toDouble();
 
   static int startDate(Map<String, dynamic> data) =>
       data[PizzaFlavorPriceNames.startDate] as int;

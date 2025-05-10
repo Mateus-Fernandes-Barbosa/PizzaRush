@@ -4,7 +4,7 @@ class UserAddress {
   final int id;
   final String email;
   final String previewName;
-  final List<Address> addresses;
+  final List<SqlAddress> addresses;
   UserAddress(this.id, this.email, this.previewName, this.addresses);
 
 

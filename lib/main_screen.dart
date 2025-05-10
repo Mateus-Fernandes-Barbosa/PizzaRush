@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pizza_rush/widgets/navigation_helper.dart';
+import 'history.dart';
 import 'managing_order_screen.dart';
 
 class MainScreen extends StatelessWidget {
@@ -67,7 +69,11 @@ class _MainScreenState extends State<_MainScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      NavigationHelper.pushNavigatorNoTransition(
+                          context, HistoryPage()
+                      );
+                    },
                     child: Text("Histórico de Pedidos")
                 ),
               ],

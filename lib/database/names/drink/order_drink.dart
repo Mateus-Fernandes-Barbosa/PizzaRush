@@ -17,8 +17,7 @@ class OrderDrinkGets {
       data[OrderDrinkNames.fkDrinkInstance] as int;
 
   static double price(Map<String, dynamic> data) =>
-      data[OrderDrinkNames.price] as double;
-
+      (data[OrderDrinkNames.price] as num).toDouble();
 }
 
 

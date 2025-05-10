@@ -4,7 +4,7 @@ class PizzaFlavorNames {
   static const String id = 'id';
   static final String name = "name";
   static final String description = "description";
-  static final String fkNameLang = "fk_name_lang";
+  static final String imageUrl = "image_url";
 }
 
 
@@ -15,11 +15,11 @@ class PizzaFlavorGets {
   static String name(Map<String, dynamic> data) =>
       data[PizzaFlavorNames.name] as String;
 
-  static String description(Map<String, dynamic> data) =>
-      data[PizzaFlavorNames.description] as String;
+  static String? description(Map<String, dynamic> data) =>
+      data[PizzaFlavorNames.description] as String?;
 
-  static int fkNameLang(Map<String, dynamic> data) =>
-      data[PizzaFlavorNames.fkNameLang] as int;
+  static String? imageUrl(Map<String, dynamic> data) =>
+      data[PizzaFlavorNames.imageUrl] as String?;
 }
 
 

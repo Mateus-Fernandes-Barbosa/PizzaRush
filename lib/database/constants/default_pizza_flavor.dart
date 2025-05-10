@@ -2,15 +2,15 @@
 import 'languages.dart';
 
 enum PizzaFlavorCatalog {
-  margueritta(0, 'margueritta', null, Languages.ptBr),
-  quatroQueijos(1, 'quatro queijos', null, Languages.ptBr),
-  calabresa(2, 'Calabresa', null, Languages.ptBr);
+  margueritta(0, 'margueritta', null, 'margueritta.png'),
+  quatroQueijos(1, 'quatro queijos', null, 'margueritta.png'),
+  calabresa(2, 'Calabresa', null, 'margueritta.png');
 
   final int id;
   final String name;
   final String? description;
-  final Languages nameLang;
-  const PizzaFlavorCatalog(this.id, this.name, this.description, this.nameLang);
+  final String imageUrl;
+  const PizzaFlavorCatalog(this.id, this.name, this.description, this.imageUrl);
 
 }
 
@@ -25,10 +25,19 @@ enum PizzaFlavorPrices {
   final double priceLarge;
   final String startDateStr;
   final String? endDateStr;
-  final PizzaFlavorCatalog fkPizzaFlavor;
-  const PizzaFlavorPrices(this.id, this.priceSmall, this.priceMedium, this.priceLarge, this.startDateStr, this.endDateStr, this.fkPizzaFlavor);
+  final PizzaFlavorCatalog fkPizzaFlavorEnum;
+  const PizzaFlavorPrices(
+      this.id,
+      this.priceSmall,
+      this.priceMedium,
+      this.priceLarge,
+      this.startDateStr,
+      this.endDateStr,
+      this.fkPizzaFlavorEnum
+    );
 
   int get startDate => DateTime.parse(startDateStr).millisecondsSinceEpoch;
   int? get endDate => endDateStr != null ? DateTime.parse(endDateStr!).millisecondsSinceEpoch : null;
+  int get fkPizzaFlavor => fkPizzaFlavorEnum.id;
 }
 
