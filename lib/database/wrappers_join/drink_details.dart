@@ -1,12 +1,10 @@
 import 'package:pizza_rush/database/names/drink/drink.dart';
 import 'package:sqflite/sqlite_api.dart';
 
-
 import 'package:pizza_rush/database/database_helper.dart';
 import 'package:pizza_rush/database/database_definitions.dart';
 import 'package:pizza_rush/database/names/drink/drink_price.dart';
 import 'package:pizza_rush/database/names/drink/order_drink.dart';
-
 
 class DrinkDescriptionNames {
   static String name = "name";
@@ -33,12 +31,9 @@ class DrinkDescriptionGets {
   static double price(Map<String, dynamic> data) =>
       (data[DrinkDescriptionNames.price] as num).toDouble();
 
-  
   static String? imageUrl(Map<String, dynamic> data) =>
       data[DrinkDescriptionNames.imageUrl] as String?;
-
 }
-
 
 class DrinkDetails {
   final Map<String, dynamic> _data;
@@ -54,8 +49,10 @@ class DrinkDetails {
   static List<DrinkDetails> fromQuery(List<Map<String, dynamic>> rows) =>
       rows.map((row) => DrinkDetails(row)).toList();
 
-
-  static Future<List<DrinkDetails>> fromJoinQuery(Database db, int orderId) async {
+  static Future<List<DrinkDetails>> fromJoinQuery(
+    Database db,
+    int orderId,
+  ) async {
     String selectQuery = '''
       od.${OrderDrinkNames.price} AS ${DrinkDescriptionNames.price},
       price.${DrinkBasePriceNames.price} AS ${DrinkDescriptionNames.basePrice},
@@ -86,11 +83,8 @@ class DrinkDetails {
     return DrinkDetails.fromQuery(map);
   }
 
-
   static Future<List<DrinkDetails>> getAllDrinkDetails(int orderId) async {
     final db = await DatabaseHelper.getDatabase();
-    return DrinkDetails.fromJoinQuery(db, orderId);
+    return await DrinkDetails.fromJoinQuery(db, orderId);
   }
 }
-
-

@@ -1,4 +1,3 @@
-
 class UserOrderNames {
   static const String id = 'id';
   static final String requestTime = "request_time";
@@ -8,13 +7,14 @@ class UserOrderNames {
   static final String fkAddress = "fk_address";
   static final String primaryContactPhone = "primary_contact_phone";
   static final String primaryContactName = "primary_contact_name";
-  static final String primaryContactObservations = "primary_contact_observations";
+  static final String primaryContactObservations =
+      "primary_contact_observations";
+  static final String totalAmount = "total_amount";
+  static final String paymentMethod = "payment_method";
 }
 
-
 class UserOrderGets {
-  static int id(Map<String, dynamic> data) =>
-      data[UserOrderNames.id] as int;
+  static int id(Map<String, dynamic> data) => data[UserOrderNames.id] as int;
 
   static int requestTimeUnix(Map<String, dynamic> data) =>
       data[UserOrderNames.requestTime] as int;
@@ -26,8 +26,8 @@ class UserOrderGets {
       data[UserOrderNames.deliveryTime] as int;
 
   static DateTime requestTimeDateTime(Map<String, dynamic> data) {
-      int unix = data[UserOrderNames.requestTime] as int;
-      return DateTime.fromMillisecondsSinceEpoch(unix);
+    int unix = data[UserOrderNames.requestTime] as int;
+    return DateTime.fromMillisecondsSinceEpoch(unix);
   }
 
   static DateTime confirmationTimeDateTime(Map<String, dynamic> data) {
@@ -54,7 +54,12 @@ class UserOrderGets {
 
   static String? primaryContactObservations(Map<String, dynamic> data) =>
       data[UserOrderNames.primaryContactObservations] as String?;
+
+  static double? totalAmount(Map<String, dynamic> data) =>
+      data[UserOrderNames.totalAmount] != null
+          ? (data[UserOrderNames.totalAmount] as num).toDouble()
+          : null;
+
+  static String? paymentMethod(Map<String, dynamic> data) =>
+      data[UserOrderNames.paymentMethod] as String?;
 }
-
-
-

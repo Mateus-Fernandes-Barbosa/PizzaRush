@@ -1,92 +1,78 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:pizza_rush/database/wrappers_custom/order_full.dart';
-
-import '../../historico_detalhes.dart';
-import '../navigation_helper.dart';
-import 'history_page_image_component.dart';
 
 class HistoryWidget extends StatelessWidget {
   const HistoryWidget({required this.item, super.key});
   final OrderFullDetails item;
 
   Widget buildWidgetLayout(BuildContext context) {
-    return ClipRRect (
-      borderRadius: BorderRadius.circular(15.0),
-      child: Material(
-          color: Colors.white,
-          child: InkWell(
-              onTap: () => {
-                // NavigationHelper.pushNavigatorNoTransition(
-                //     context, HistoricoDetails(id: 0)
-                // )
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  HistoryItemImage(
-                    image: null, // Add default image
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap:
+            () => {
+              // NavigationHelper.pushNavigatorNoTransition(
+              //     context, HistoricoDetails(id: item.order.id)
+              // )
+            },
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.red[400]!, Colors.red[600]!],
                   ),
-                  Expanded(
-                      child: HistoryItemText(item: item)
-                  )
-                ],
-              )
-          )
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.local_pizza, color: Colors.white, size: 28),
+              ),
+              SizedBox(width: 16),
+              Expanded(child: HistoryItemText(item: item)),
+            ],
+          ),
+        ),
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return buildWidgetLayout(context);
   }
 }
 
-
 class HistoryItemText extends StatelessWidget {
   const HistoryItemText({required this.item, super.key});
   final OrderFullDetails item;
 
-
-
-  String getTimeDifference() {
-    final Duration difference = DateTime.now().difference(item.order.deliveryTimeDateTime);
-
-
-    if (difference.inDays == 0) {
-      // Less than 1 day, show in hours, minutes, or seconds
-      if (difference.inHours > 0) {
-        return '${difference.inHours} horas atrás';
-
-      } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes} minutos atrás';
-      } else {
-        return '${difference.inSeconds} segundos atrás';
-      }
-    } else if (difference.inDays <= 7) {
-      // Less than or equal to 7 days, show in days
-      return '${difference.inDays} dias atrás';
-    } else {
-      // More than 7 days, show the date
-      return DateFormat('dd-MM-yyyy').format(item.order.deliveryTimeDateTime);
-    }
-  }
-
   // Should have had its own field on sql to account for discounts! big oof
   double getTotalCost() {
-      double sum = 0;
-      for (final pizza in item.pizza) {
-        sum += pizza.price;
-      }
+    double sum = 0;
+    for (final pizza in item.pizza) {
+      sum += pizza.price;
+    }
 
-      for (final drink in item.drinks) {
-        sum += drink.price;
-      }
+    for (final drink in item.drinks) {
+      sum += drink.price;
+    }
 
-      return sum;
+    return sum;
   }
 
   @override
@@ -99,38 +85,119 @@ class HistoryItemText extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ignore location for now
-
-          Text(
-            'Endereço: ${item.address.line1}',
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          // Order header with ID and status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Pedido #${item.order.id}',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Entregue',
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
 
+          SizedBox(height: 8),
 
-          Text(
-            'Tempo de entrega: ${getTimeDifference()}',
-            style: textTheme.bodyLarge, // Use caption style from TextTheme
-          ),
-
-          // TEMPORARILY REMOVED AS THERE IS NO SUITABLE DESCRIPTION
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              "Custo total: R\$${getTotalCost()}",
-              style: textTheme.bodyMedium, // Use caption style from TextTheme
+          // Pizza details
+          if (item.pizza.isNotEmpty) ...[
+            Text(
+              'Pizza(s):',
+              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
+            ...item.pizza.map((pizza) {
+              List<String> flavorNames =
+                  pizza.details.map((detail) => detail.name).toList();
+              String borderType =
+                  pizza.details.isNotEmpty
+                      ? pizza.details.first.pizzaBorderName
+                      : 'Normal';
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+                child: Text(
+                  '• ${flavorNames.join(', ')} - Borda: $borderType - R\$ ${pizza.price.toStringAsFixed(2)}',
+                  style: textTheme.bodyMedium,
+                ),
+              );
+            }).toList(),
+            SizedBox(height: 8),
+          ],
+
+          // Beverages details with quantities
+          if (item.drinks.isNotEmpty) ...[
+            Text(
+              'Bebidas:',
+              style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            // Group drinks by name and sum quantities
+            ...(() {
+              Map<String, List<dynamic>> groupedDrinks = {};
+              for (var drink in item.drinks) {
+                String key = '${drink.name} (${drink.brand})';
+                if (!groupedDrinks.containsKey(key)) {
+                  groupedDrinks[key] = [];
+                }
+                groupedDrinks[key]!.add(drink);
+              }
+
+              return groupedDrinks.entries.map((entry) {
+                int quantity = entry.value.length;
+                double totalPrice = entry.value.fold(
+                  0.0,
+                  (sum, drink) => sum + drink.price,
+                );
+
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+                  child: Text(
+                    '• ${quantity}x ${entry.key} - R\$ ${totalPrice.toStringAsFixed(2)}',
+                    style: textTheme.bodyMedium,
+                  ),
+                );
+              }).toList();
+            })(),
+            SizedBox(height: 8),
+          ],
+
+          // Total price
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total:',
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red[600],
+                ),
+              ),
+              Text(
+                'R\$ ${getTotalCost().toStringAsFixed(2)}',
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red[600],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-

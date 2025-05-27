@@ -4,6 +4,7 @@ import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:pizza_rush/map_screen.dart';
+import 'package:pizza_rush/database/services/order_service.dart';
 
 // URL do servidor local
 const String apiUrl =
@@ -16,6 +17,7 @@ class PaymentScreen extends StatelessWidget {
   final String observations;
   final String crustType;
   final String size;
+  final String? deliveryAddress;
 
   PaymentScreen({
     Key? key,
@@ -25,6 +27,7 @@ class PaymentScreen extends StatelessWidget {
     required this.observations,
     required this.crustType,
     required this.size,
+    this.deliveryAddress,
   }) : super(key: key);
 
   @override
@@ -36,6 +39,7 @@ class PaymentScreen extends StatelessWidget {
       observations: observations,
       crustType: crustType,
       size: size,
+      deliveryAddress: deliveryAddress,
     );
   }
 }
@@ -47,6 +51,7 @@ class _PaymentScreen extends StatefulWidget {
   final String observations;
   final String crustType;
   final String size;
+  final String? deliveryAddress;
 
   _PaymentScreen({
     required this.totalPrice,
@@ -55,6 +60,7 @@ class _PaymentScreen extends StatefulWidget {
     required this.observations,
     required this.crustType,
     required this.size,
+    this.deliveryAddress,
   });
 
   @override
@@ -84,10 +90,6 @@ class _PaymentScreenState extends State<_PaymentScreen> {
   bool _isCardFormValid = false;
   stripe.CardFormEditController _cardFormController =
       stripe.CardFormEditController();
-
-  // Controladores para campos adicionais
-  final TextEditingController _cityController = TextEditingController();
-  final TextEditingController _zipCodeController = TextEditingController();
 
   @override
   void initState() {
@@ -226,69 +228,24 @@ class _PaymentScreenState extends State<_PaymentScreen> {
     }
   }
 
-  // Salvar detalhes do pedido no banco de dados
+  // Salvar detalhes do pedido no banco de dados local
   Future<void> _saveOrderToDatabase() async {
-    final orderDetails = {
-      'customer_name': _nameController.text,
-      'customer_phone': _phoneController.text,
-      'delivery_address': _addressController.text,
-      'total_price': widget.totalPrice,
-      'items': widget.orderItems,
-      'observations': widget.observations,
-      'crust_type': widget.crustType,
-      'size': widget.size,
-      'payment_method': _paymentMethod,
-      'order_date': DateTime.now().toIso8601String(),
-      'status': _paymentMethod == 'Dinheiro' ? 'pending_payment' : 'paid',
-    };
-
     try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/save-order'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(orderDetails),
+      await OrderService.saveOrder(
+        customerName: _nameController.text,
+        customerPhone: _phoneController.text,
+        deliveryAddress: _addressController.text,
+        totalPrice: widget.totalPrice,
+        orderItems: widget.orderItems,
+        orderBeverages: widget.orderBeverages,
+        observations: widget.observations,
+        crustType: widget.crustType,
+        size: widget.size,
+        paymentMethod: 'Stripe',
       );
-
-      if (response.statusCode != 200) {
-        throw Exception('Falha ao salvar o pedido');
-      }
-
-      // Pedido salvo com sucesso
-      return;
     } catch (e) {
-      throw Exception('Erro ao salvar pedido: ${e.toString()}');
+      throw e;
     }
-  }
-
-  // Diálogo de confirmação de pagamento bem-sucedido
-  void _showPaymentSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Pagamento Concluído'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 64),
-                SizedBox(height: 16),
-                Text('Seu pagamento foi processado com sucesso!'),
-                SizedBox(height: 8),
-                Text('O seu pedido está sendo preparado.'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  // Voltar para a tela principal
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                child: Text('Voltar ao Menu Principal'),
-              ),
-            ],
-          ),
-    );
   }
 
   // Helper method to build modern text fields
@@ -296,7 +253,6 @@ class _PaymentScreenState extends State<_PaymentScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    String? Function(String?)? validator,
     TextInputType? keyboardType,
   }) {
     return Container(
@@ -447,9 +403,19 @@ class _PaymentScreenState extends State<_PaymentScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
+                  // Pass the delivery address from the form to MapScreen
+                  String deliveryAddress =
+                      _addressController.text.isNotEmpty
+                          ? _addressController.text
+                          : "Rua das Flores, 123, Bairro Centro, Belo Horizonte, MG";
+
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MapScreen()),
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              MapScreen(deliveryAddress: deliveryAddress),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(

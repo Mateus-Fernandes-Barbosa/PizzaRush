@@ -2,27 +2,34 @@ import '../constant_loaders/language_service.dart';
 import 'languages.dart';
 
 enum DrinkCatalog {
-  cocaZeroCan(0, 'Coca Zero Lata 500ml', 'Coca-cola', null, 'coca-cola.png'),
-  cocaCan(1, 'Coca Lata 500ml', 'Coca-cola', null, 'coca-cola.png'),
-  cocaZeroGlassBottle(2, 'Coca Zero Bottle 550ml', 'Coca-cola', null, 'coca-cola.png'),
-  guaranaGarrafaPet(3, 'Guarana garrafa 2L', 'Ambev', null, 'coca-cola.png');
+  cocaBottle(6, 'Coca Cola 2L', 'Coca-cola', null, 'coca.png'),
+  spriteBottle(7, 'Sprite 2L', 'Sprite', null, 'sprite.png'),
+  waterBottle(8, 'Agua 1L', 'Agua', null, 'agua.png');
 
   final int id;
   final String name;
   final String brand;
   final String? description;
   final String imageUrl;
-  const DrinkCatalog(this.id, this.name, this.brand, this.description, this.imageUrl);
-
-
-
+  const DrinkCatalog(
+    this.id,
+    this.name,
+    this.brand,
+    this.description,
+    this.imageUrl,
+  );
 }
 
 enum DrinkPrices {
-  cocaZeroCanPrice1(0, 7.00, '2024-05-26', null, DrinkCatalog.cocaZeroCan),
-  cocaCanPrice1(1, 7.00, '2024-05-26', null, DrinkCatalog.cocaCan),
-  cocaZeroGlassBottlePrice1(2, 14.00, '2024-05-26', null, DrinkCatalog.cocaZeroGlassBottle),
-  guarafaGarrafaPetPrice1(3, 20.00, '2024-05-26', null, DrinkCatalog.guaranaGarrafaPet);
+  cocaBottlePrice1(6, 13.00, '2024-05-26', null, DrinkCatalog.cocaBottle),
+  spriteBottlePrice1(7, 13.00, '2024-05-26', null, DrinkCatalog.spriteBottle),
+  waterBottlePrice1(
+    8,
+    7.00,
+    '2024-05-26',
+    null,
+    DrinkCatalog.waterBottle,
+  );
 
   final int id;
   final double price;
@@ -30,14 +37,17 @@ enum DrinkPrices {
   final String? endDateStr;
   final DrinkCatalog fkDrinkEnum;
   const DrinkPrices(
-      this.id,
-      this.price,
-      this.startDateStr,
-      this.endDateStr,
-      this.fkDrinkEnum
+    this.id,
+    this.price,
+    this.startDateStr,
+    this.endDateStr,
+    this.fkDrinkEnum,
   );
 
   int get startDate => DateTime.parse(startDateStr).millisecondsSinceEpoch;
-  int? get endDate => endDateStr != null ? DateTime.parse(endDateStr!).millisecondsSinceEpoch : null;
+  int? get endDate =>
+      endDateStr != null
+          ? DateTime.parse(endDateStr!).millisecondsSinceEpoch
+          : null;
   int get fkDrink => fkDrinkEnum.id;
 }

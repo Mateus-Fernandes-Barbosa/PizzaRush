@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
-import 'main_screen.dart';
 import 'payment_screen.dart';
 
 //Class to manage the order of flavors
@@ -108,9 +107,9 @@ class Precos {
 //--------------------------Screens---------------------------//
 //StatelessWidget of the ManagingOrder screen
 class ManagingOrder extends StatelessWidget {
-  late int quantityFlavors;
+  final int quantityFlavors;
 
-  ManagingOrder({Key? key, required this.quantityFlavors});
+  ManagingOrder({Key? key, required this.quantityFlavors}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +119,7 @@ class ManagingOrder extends StatelessWidget {
 
 //StatefulWidget of the ManagingOrder screen
 class _ManagingOrder extends StatefulWidget {
-  late int quantityFlavors;
+  final int quantityFlavors;
 
   _ManagingOrder({required this.quantityFlavors});
 
@@ -227,8 +226,8 @@ class _ManagingOrderState extends State<_ManagingOrder> {
     //}
   }
 
-  //Function to set the drinks
-  // This function is responsible for setting the drinks in the list of drinks at the beginning of the screen
+  //Function to set the beverages
+  // This function is responsible for setting the beverages in the list of beverages at the beginning of the screen
   void setBeverages() {
     bebidas = [
       Bebida(
@@ -240,24 +239,12 @@ class _ManagingOrderState extends State<_ManagingOrder> {
       Bebida(
         id: 7,
         preco: precos.setPrices(7, 0, true),
-        nome: "Guaraná",
-        imagem: 'lib/assets/images/guarana.png',
-      ),
-      Bebida(
-        id: 8,
-        preco: precos.setPrices(8, 0, true),
-        nome: "Fanta",
-        imagem: 'lib/assets/images/fanta.png',
-      ),
-      Bebida(
-        id: 9,
-        preco: precos.setPrices(9, 0, true),
         nome: "Sprite",
         imagem: 'lib/assets/images/sprite.png',
       ),
       Bebida(
-        id: 10,
-        preco: precos.setPrices(10, 0, true),
+        id: 8,
+        preco: precos.setPrices(8, 0, true),
         nome: "Água",
         imagem: 'lib/assets/images/agua.png',
       ),

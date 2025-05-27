@@ -88,6 +88,8 @@ enum SqlTable {
       `primary_contact_phone` TEXT NULL,
       `primary_contact_name` TEXT NULL,
       `primary_contact_observations` TEXT NULL,
+      `total_amount` DECIMAL(10, 2) NULL,
+      `payment_method` TEXT NULL,
       
       FOREIGN KEY(`fk_user`) REFERENCES `user`(`id`),
       FOREIGN KEY(`fk_address`) REFERENCES `address`(`id`)
@@ -158,11 +160,11 @@ enum SqlTable {
     );
   ''');
 
-
   final String createScript;
   const SqlTable(this.createScript);
 }
 
+const int _databaseVersion = 2; // Increment version for migration
 
 Future<void> createTables(Database db) async {
   for (var table in SqlTable.values) {
@@ -171,7 +173,31 @@ Future<void> createTables(Database db) async {
   }
 }
 
+/// Handles database migrations between versions
+Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
+  debugPrint('Upgrading database from version $oldVersion to $newVersion');
 
+  if (oldVersion < 2) {
+    // Add new columns to user_order table
+    try {
+      await db.execute(
+        'ALTER TABLE user_order ADD COLUMN total_amount DECIMAL(10, 2) NULL',
+      );
+      debugPrint('Added total_amount column to user_order');
+    } catch (e) {
+      debugPrint('Column total_amount may already exist: $e');
+    }
+
+    try {
+      await db.execute(
+        'ALTER TABLE user_order ADD COLUMN payment_method TEXT NULL',
+      );
+      debugPrint('Added payment_method column to user_order');
+    } catch (e) {
+      debugPrint('Column payment_method may already exist: $e');
+    }
+  }
+}
 
 Future<void> storeBaseLanguages(Database db) async {
   debugPrint('Initializing new data');
@@ -186,5 +212,4 @@ Future<void> storeBaseLanguages(Database db) async {
 // Example data
 Future<void> initTestData(Database db) async {
   debugPrint('Initializing new data');
-
 }

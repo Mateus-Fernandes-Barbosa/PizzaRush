@@ -2,13 +2,11 @@ import 'dart:core';
 
 import 'package:pizza_rush/database/names/pizza/pizza_border.dart';
 
-
 import 'package:pizza_rush/database/database_helper.dart';
 import 'package:pizza_rush/database/database_definitions.dart';
 import 'package:pizza_rush/database/names/pizza/pizza_flavor.dart';
 import 'package:pizza_rush/database/names/pizza/pizza_flavor_percentage.dart';
 import 'package:pizza_rush/database/names/pizza/pizza_flavor_price.dart';
-
 
 class PizzaDescriptionNames {
   static String name = "name";
@@ -23,7 +21,6 @@ class PizzaDescriptionNames {
   static String priceSmall = "priceSmall";
   static String priceMedium = "priceMedium";
   static String priceLarge = "priceLarge";
-
 }
 
 class PizzaDescriptionGets {
@@ -36,22 +33,18 @@ class PizzaDescriptionGets {
   static String? imageUrl(Map<String, dynamic> data) =>
       data[PizzaDescriptionNames.imageUrl] as String?;
 
-
-  
   static String pizzaBorderName(Map<String, dynamic> data) =>
       data[PizzaDescriptionNames.pizzaBorderName] as String;
-  
+
   static String? pizzaBorderDescription(Map<String, dynamic> data) =>
       data[PizzaDescriptionNames.pizzaBorderDescription] as String?;
 
   static String? pizzaImageUrl(Map<String, dynamic> data) =>
       data[PizzaDescriptionNames.pizzaImageUrl] as String?;
 
-
-
   static int percentage(Map<String, dynamic> data) =>
       data[PizzaDescriptionNames.percentage] as int;
-  
+
   static double priceSmall(Map<String, dynamic> data) =>
       (data[PizzaDescriptionNames.priceSmall] as num).toDouble();
 
@@ -60,11 +53,7 @@ class PizzaDescriptionGets {
 
   static double priceLarge(Map<String, dynamic> data) =>
       (data[PizzaDescriptionNames.priceLarge] as num).toDouble();
-
-
-
 }
-
 
 class PizzaDescription {
   final Map<String, dynamic> _data;
@@ -74,19 +63,20 @@ class PizzaDescription {
   String? get description => PizzaDescriptionGets.description(_data);
   String? get imageUrl => PizzaDescriptionGets.imageUrl(_data);
   String get pizzaBorderName => PizzaDescriptionGets.pizzaBorderName(_data);
-  String? get pizzaBorderDescription => PizzaDescriptionGets.pizzaBorderDescription(_data);
+  String? get pizzaBorderDescription =>
+      PizzaDescriptionGets.pizzaBorderDescription(_data);
 
   int get percentage => PizzaDescriptionGets.percentage(_data);
   double get priceSmall => PizzaDescriptionGets.priceSmall(_data);
   double get priceMedium => PizzaDescriptionGets.priceMedium(_data);
   double get priceLarge => PizzaDescriptionGets.priceLarge(_data);
 
-
   static List<PizzaDescription> fromMap(List<Map<String, dynamic>> rows) =>
       rows.map((row) => PizzaDescription(row)).toList();
 
-
-  static Future<List<PizzaDescription>> fromSinglePizzaOrder(int pizzaOrder) async {
+  static Future<List<PizzaDescription>> fromSinglePizzaOrder(
+    int pizzaOrder,
+  ) async {
     final db = await DatabaseHelper.getDatabase();
 
     String selectQuery = '''
@@ -105,13 +95,12 @@ class PizzaDescription {
 
     ''';
 
-    // TODO: NOT CHECKED
     String sql = '''
       SELECT $selectQuery
       FROM ${SqlTable.pizza_flavor_percentage.name} AS percentage
       
       JOIN ${SqlTable.pizza_border.name} AS border ON 
-        percentage.${PizzaFlavorPercentageNames.fkFlavorPrice} 
+        percentage.${PizzaFlavorPercentageNames.fkPizzaBorder} 
         = border.${PizzaBorderNames.id}
         
       JOIN ${SqlTable.pizza_flavor_price.name} AS price ON 
@@ -125,19 +114,8 @@ class PizzaDescription {
       WHERE percentage.${PizzaFlavorPercentageNames.fkOrderPizza} = ?
     ''';
 
-    //debugPrint(sql);
-
     var map = await db.rawQuery(sql, [pizzaOrder]);
     print(map);
     return PizzaDescription.fromMap(map);
   }
-
-
-  
-
-
-
-
 }
-
-

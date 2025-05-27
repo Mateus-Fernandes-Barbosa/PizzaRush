@@ -9,13 +9,21 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MapScreen extends StatelessWidget {
+  final String? deliveryAddress;
+
+  MapScreen({this.deliveryAddress});
+
   @override
   Widget build(BuildContext context) {
-    return _MapScreen();
+    return _MapScreen(deliveryAddress: deliveryAddress);
   }
 }
 
 class _MapScreen extends StatefulWidget {
+  final String? deliveryAddress;
+
+  _MapScreen({this.deliveryAddress});
+
   @override
   _MapScreenState createState() => _MapScreenState();
 }
@@ -30,6 +38,7 @@ class _MapScreenState extends State<_MapScreen> {
   Set<Polyline> _polylines = {};
   Set<Marker> _markers = {};
   double? _estimatedTime; // Store the estimated time for the BottomSheet
+  String? _displayAddress; // Store the formatted address for display
   final String apiUrl =
       'http://192.168.40.81:4242'; // Alterado para HTTP para evitar problemas de handshake
 
@@ -37,7 +46,27 @@ class _MapScreenState extends State<_MapScreen> {
   void initState() {
     super.initState();
     _requestLocationPermission();
-    _fetchOrderDetails();
+
+    // Use the passed address if available, otherwise fetch from server
+    if (widget.deliveryAddress != null && widget.deliveryAddress!.isNotEmpty) {
+      _displayAddress = widget.deliveryAddress;
+      _getCoordinatesFromAddress(widget.deliveryAddress!)
+          .then((coordinates) {
+            setState(() {
+              _destinationCoordinates = coordinates;
+            });
+            _addMarkers();
+            _drawRoute();
+          })
+          .catchError((error) {
+            print('Erro ao converter endereço em coordenadas: $error');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao converter endereço: $error')),
+            );
+          });
+    } else {
+      _fetchOrderDetails();
+    }
   }
 
   Future<void> _requestLocationPermission() async {
@@ -54,19 +83,28 @@ class _MapScreenState extends State<_MapScreen> {
       if (response.statusCode == 200) {
         final orderDetails = jsonDecode(response.body);
 
+        // Obtém o endereço de entrega do JSON retornado
+        final deliveryAddress = orderDetails['lastOrder']['delivery_address'];
+
         setState(() {
-          // Obtém o endereço de entrega do JSON retornado
-          final deliveryAddress = orderDetails['lastOrder']['delivery_address'];
-
-          // Usa o Geocoding para converter o endereço em coordenadas
-          _getCoordinatesFromAddress(deliveryAddress).then((coordinates) {
-            _destinationCoordinates = coordinates;
-            _addMarkers();
-            _drawRoute();
-          });
-
-          _estimatedTime = 15.0; // Exemplo de tempo estimado
+          _displayAddress = deliveryAddress; // Store the formatted address
         });
+
+        // Usa o Geocoding para converter o endereço em coordenadas
+        _getCoordinatesFromAddress(deliveryAddress)
+            .then((coordinates) {
+              setState(() {
+                _destinationCoordinates = coordinates;
+              });
+              _addMarkers();
+              _drawRoute();
+            })
+            .catchError((error) {
+              print('Erro ao converter endereço em coordenadas: $error');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erro ao converter endereço: $error')),
+              );
+            });
       } else {
         print('Erro ao buscar detalhes do pedido: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -394,31 +432,6 @@ class _MapScreenState extends State<_MapScreen> {
 
                 SizedBox(height: 20),
 
-                // Imagem da pizza com frame
-                Container(
-                  width: double.infinity,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.asset(
-                      'lib/assets/images/calabresa.jpg',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
                 // Informações do endereço
                 Container(
                   padding: EdgeInsets.all(16),
@@ -449,7 +462,16 @@ class _MapScreenState extends State<_MapScreen> {
                         ],
                       ),
                       SizedBox(height: 8),
-                      if (_destinationCoordinates != null)
+                      if (_displayAddress != null)
+                        Text(
+                          _displayAddress!,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                            height: 1.4,
+                          ),
+                        )
+                      else if (_destinationCoordinates != null)
                         Text(
                           'Lat: ${_destinationCoordinates!.latitude.toStringAsFixed(4)}\nLng: ${_destinationCoordinates!.longitude.toStringAsFixed(4)}',
                           style: TextStyle(

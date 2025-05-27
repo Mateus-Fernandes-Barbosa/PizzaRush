@@ -18,12 +18,15 @@ class DatabaseHelper {
 
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2, // Updated to version 2
       onCreate: (db, version) async {
         await createTables(db);
+        await storeBaseLanguages(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await onUpgrade(db, oldVersion, newVersion);
       },
     );
-
 
     await ensureInitialization();
 
@@ -42,5 +45,4 @@ class DatabaseHelper {
     StaticDrinkCatalog.addDrinksFromCatalog();
     StaticDrinkCatalog.addDrinkPriceCatalog();
   }
-
 }

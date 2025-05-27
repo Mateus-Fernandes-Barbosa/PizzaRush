@@ -5,7 +5,6 @@ import 'package:pizza_rush/database/database_helper.dart';
 import 'package:pizza_rush/database/database_definitions.dart';
 import 'package:pizza_rush/database/names/address.dart';
 
-
 class SqlAddress {
   static List<String> columns = [
     AddressNames.id,
@@ -35,13 +34,10 @@ class SqlAddress {
   Map<String, dynamic> toMap() => _data;
 
   @override
-  String toString() =>
-      'Address(id: $id, line1: $line1)';
+  String toString() => 'Address(id: $id, line1: $line1)';
 
   static List<SqlAddress> fromQuery(List<Map<String, dynamic>> rows) =>
       rows.map((row) => SqlAddress(row)).toList();
-
-
 
   static Future<List<SqlAddress>> getAddressesForUser(int userId) async {
     final db = await DatabaseHelper.getDatabase();
@@ -84,9 +80,11 @@ class SqlAddress {
     ''';
 
     final map = await db.rawQuery(sql, [orderId]);
-    final res = SqlAddress.fromQuery(map);
-    print(res);
-    return res.first; //ALWAYS EXPECTED TO HAVE ONE
+    if (map.isNotEmpty) {
+      return SqlAddress(map.first);
+    } else {
+      throw Exception('Address not found for order $orderId');
+    }
   }
 
   static Future<int> addAddress({
@@ -151,5 +149,4 @@ class SqlAddress {
       whereArgs: [addressId],
     );
   }
-
 }

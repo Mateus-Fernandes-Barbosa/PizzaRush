@@ -1,12 +1,9 @@
-
 import 'package:sqflite/sqflite.dart';
 
 import 'package:pizza_rush/database/database_helper.dart';
 import 'package:pizza_rush/database/database_definitions.dart';
 import 'package:pizza_rush/database/names/pizza/order_pizza.dart';
 import 'package:pizza_rush/database/names/pizza/pizza_flavor_percentage.dart';
-
-
 
 class PizzaOrder {
   static List<String> columns = [
@@ -24,7 +21,6 @@ class PizzaOrder {
 
   static List<PizzaOrder> fromQuery(List<Map<String, dynamic>> rows) =>
       rows.map((row) => PizzaOrder(row)).toList();
-
 
   // Change to ids. Confusing field that does not yield relevant data by itself
   static Future<List<PizzaOrder>> getAllPizzaOrders(int orderId) async {
@@ -54,14 +50,13 @@ class PizzaOrder {
     required double price,
     String? additionalRequests,
     required Map<int, FlavorConfig> flavorPriceToPercentageMap,
-
   }) async {
     Database db = await DatabaseHelper.getDatabase();
 
     int orderPizzaId = await db.insert(SqlTable.order_pizza.name, {
       PizzaOrderNames.fkOrder: fkOrder,
       PizzaOrderNames.price: price,
-      PizzaOrderNames.additionalRequests: additionalRequests
+      PizzaOrderNames.additionalRequests: additionalRequests,
     });
 
     final batch = db.batch();
@@ -86,9 +81,3 @@ class FlavorConfig {
 
   FlavorConfig(this.percentage, this.borderId);
 }
-
-
-
-
-
-
